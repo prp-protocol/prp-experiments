@@ -11,8 +11,8 @@
     },
     {
       "path": "PUBLIC-README.txt",
-      "bytes": 8577,
-      "sha256": "b9ff8db7400bf9acf465781890879c85af22758673ce691c0c9dc8d93eabd4ac"
+      "bytes": 10243,
+      "sha256": "5a8fe7ff2bbf7d82f28a656d5a2e9b1783b29316b7d1fd62d55518f024be7c6c"
     },
     {
       "path": "distribution/public-experiments/native-package/cleanup.py",
@@ -28,6 +28,11 @@
       "path": "distribution/public-experiments/native-package/exp001.py",
       "bytes": 2230,
       "sha256": "ad8e41711e5c0b89139e0aa3aaaec720fc491da646c1648583b1997e4c24dba0"
+    },
+    {
+      "path": "distribution/public-experiments/native-package/full_cycle.py",
+      "bytes": 8626,
+      "sha256": "75d82217c782dd2c8ef9f92705402adfb2c5ee6b419a1a3b44f110264e4db4d4"
     },
     {
       "path": "distribution/public-experiments/native-package/host_tools.py",
@@ -63,6 +68,11 @@
       "path": "distribution/public-experiments/native-package/test_exp001.py",
       "bytes": 4284,
       "sha256": "d87a8dfb4b51ecd899fe5bc7ffeb9d2762447b4e64459da3ee8e09381af10537"
+    },
+    {
+      "path": "distribution/public-experiments/native-package/test_full_cycle.py",
+      "bytes": 9219,
+      "sha256": "82b1cfb53673e7127853fbbbac5418773afa319fe26c6bdb570b91aed61eda56"
     },
     {
       "path": "distribution/public-experiments/native-package/test_presentation.py",
@@ -683,6 +693,11 @@
       "path": "repair-checkout.py",
       "bytes": 2626,
       "sha256": "1760efedb1427de97218a983e6cffaa969c812a1691aac24d223f6ed69a03576"
+    },
+    {
+      "path": "run",
+      "bytes": 355,
+      "sha256": "98b49aae705cb8f746bfd258aa6af997a4765974b437af33727866de9b0bba62"
     },
     {
       "path": "tools/reproduce-exp-001",

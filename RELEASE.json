@@ -1,6 +1,6 @@
 {
   "schema": "prp-experiments-source-release-1",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "native_assets_version": "1.0.0",
   "independent_host_validation": "EXP002_USER_REPORTED_PRELIMINARY_PASS; EXP001_LOCAL_ISOLATED_EXPORT_PASS",
   "announced": false,
@@ -12,8 +12,8 @@
     },
     {
       "path": ".gitignore",
-      "bytes": 28,
-      "sha256": "612a3ec96abf4d322621ebbb2fd9e3dea49efc20d4846812f504bf77d69b9818"
+      "bytes": 42,
+      "sha256": "085b12b5c042fbfa95a9bfa134d30bcf15512245c3e7a84cfa1814e2637ebd39"
     },
     {
       "path": "EXP-002.pdf",
@@ -32,8 +32,8 @@
     },
     {
       "path": "PUBLIC-README.txt",
-      "bytes": 8577,
-      "sha256": "b9ff8db7400bf9acf465781890879c85af22758673ce691c0c9dc8d93eabd4ac"
+      "bytes": 10243,
+      "sha256": "5a8fe7ff2bbf7d82f28a656d5a2e9b1783b29316b7d1fd62d55518f024be7c6c"
     },
     {
       "path": "README.md",
@@ -47,8 +47,8 @@
     },
     {
       "path": "SOURCE-MANIFEST.json",
-      "bytes": 27187,
-      "sha256": "1c776e6b4d8a69929a93c84c8289724cc5ef91b86d923e19020198770e0bdaa7"
+      "bytes": 27720,
+      "sha256": "9cca2ba031cbc488ae411b7d099556aa154b52fc3e3debb778bdab85516801b4"
     },
     {
       "path": "distribution/public-experiments/native-package/cleanup.py",
@@ -64,6 +64,11 @@
       "path": "distribution/public-experiments/native-package/exp001.py",
       "bytes": 2230,
       "sha256": "ad8e41711e5c0b89139e0aa3aaaec720fc491da646c1648583b1997e4c24dba0"
+    },
+    {
+      "path": "distribution/public-experiments/native-package/full_cycle.py",
+      "bytes": 8626,
+      "sha256": "75d82217c782dd2c8ef9f92705402adfb2c5ee6b419a1a3b44f110264e4db4d4"
     },
     {
       "path": "distribution/public-experiments/native-package/host_tools.py",
@@ -99,6 +104,11 @@
       "path": "distribution/public-experiments/native-package/test_exp001.py",
       "bytes": 4284,
       "sha256": "d87a8dfb4b51ecd899fe5bc7ffeb9d2762447b4e64459da3ee8e09381af10537"
+    },
+    {
+      "path": "distribution/public-experiments/native-package/test_full_cycle.py",
+      "bytes": 9219,
+      "sha256": "82b1cfb53673e7127853fbbbac5418773afa319fe26c6bdb570b91aed61eda56"
     },
     {
       "path": "distribution/public-experiments/native-package/test_presentation.py",
@@ -741,9 +751,15 @@
       "sha256": "1760efedb1427de97218a983e6cffaa969c812a1691aac24d223f6ed69a03576"
     },
     {
+      "path": "run",
+      "bytes": 355,
+      "sha256": "98b49aae705cb8f746bfd258aa6af997a4765974b437af33727866de9b0bba62"
+    },
+    {
       "path": "tools/reproduce-exp-001",
       "bytes": 19494,
       "sha256": "9ce43421686c700761d676453d4ca2ccaf276d41534f55faa863592b92764ec2"
     }
-  ]
+  ],
+  "full_cycle_qualification": "HOST_COMPOSITION_TESTS; NO_NEW_NATIVE_CYCLE"
 }

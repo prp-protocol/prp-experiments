@@ -1,8 +1,34 @@
 PRP experiments: session processing and forwarding
 
-Source edition 1.1.0; EXP-002 native assets remain pinned to release 1.0.0.
+Source edition 1.2.0; EXP-002 native assets remain pinned to release 1.0.0.
 This is a selected standalone source export, not the private repository/history.
 The release includes pinned HTTPS downloads and the approved explanatory PDF.
+
+One-command complete cycle
+After cloning/updating this repository, with the documented host packages installed:
+  sudo ./run
+
+No parameters are required. This command checks prerequisites, runs and verifies
+EXP-001, downloads/verifies and prepares EXP-002, runs and verifies EXP-002, then
+cleans and removes the new cycle's entire temporary directory. Results are shown
+as readable terminal summaries. On full success, no new installation, downloaded
+base, overlay or evidence file remains. A later cycle downloads the base again.
+The temporary directory is .prp-cycle-<unique-id> beside the commands, with
+private permissions. Existing .exp002 installations and earlier runs are untouched;
+use sudo ./experiment uninstall separately if an old installation is no longer needed.
+
+On failure, interruption, uncertain guest termination or cleanup failure, the
+command returns nonzero and preserves remaining files with their exact location.
+A partial deletion cannot restore already removed files. There are no automatic
+retries, host package installs or implicit privilege elevation. Finish runs made
+by older/manual launchers first. Concurrent ./run cycles in this checkout refuse.
+The existing EXP-002 600-second attempt limit and separate 1800-second download
+limit are unchanged; these are not a single wall-clock bound for both experiments.
+The base download is about 1.67 GB and two guests need 4 GiB RAM plus host overhead.
+
+Use the separate commands below when you want to retain evidence or reuse the
+installation instead of downloading it again. Full-cycle deletion is ordinary
+file removal, not secure erasure or proof against a hostile concurrent writer.
 
 Experiments
   ./experiment list
