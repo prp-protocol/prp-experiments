@@ -1,0 +1,126 @@
+#!/usr/bin/env python3
+"""Standalone two-VM EXP-002 driver. No Agentmux service or private catalogue."""
+import argparse,hashlib,importlib.machinery,json,os,pathlib,shutil,subprocess,sys,time
+HERE=pathlib.Path(__file__).resolve().parent;ROOT=HERE.parents[2]
+PKG=ROOT/'distribution/public-experiments/package'
+LAB=ROOT/'experiments/exp-002-none-forwarding/native-lab'
+sys.path[:0]=[str(HERE),str(PKG),str(LAB),str(LAB/'identities')]
+import deployment
+
+def sha(p):return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()
+def json_write(path,value):
+ with pathlib.Path(path).open('x') as f:json.dump(value,f,indent=2);f.write('\n')
+def load_install(path):
+ root=pathlib.Path(path).absolute();d=json.loads(deployment.bounded(root/'native-install.json',65536))
+ if d['schema']!='exp002-native-install-1':raise ValueError('Installation schema')
+ for k in ('helper','probe','identity_helper'):
+  p=root/d[k]['file']
+  if p.parent!=root or sha(p)!=d[k]['sha256']:raise ValueError('Built consumer changed: '+k)
+ return root,d
+
+def install(a):
+ release,mods=deployment.load(a.release,a.release_sha256,a.artifacts)
+ dest=pathlib.Path(a.directory).absolute();dest.mkdir(mode=0o700)
+ logs=[]
+ def run(cmd):
+  p=subprocess.run(list(map(str,cmd)),capture_output=True,text=True,timeout=90)
+  logs.append({'argv':list(map(str,cmd)),'exit':p.returncode,'stdout':p.stdout,'stderr':p.stderr})
+  if p.returncode:raise RuntimeError('Consumer build failed; see install-commands.json')
+ try:
+  # Build own sources only; no downloaded build hooks or sibling checkout.
+  run([sys.executable,LAB/'build_m1.py',dest/'probe-build','--preliminary','--prp-capture','--warmed','--opaque-transit'])
+  run([sys.executable,LAB/'identities/build.py',dest/'identity-build'])
+  run(['cc','-std=c11','-O2','-Wall','-Wextra','-Werror','-fPIC','-shared',PKG/'held_spawn.c','-o',dest/'held_spawn.so'])
+  shutil.copyfile(dest/'probe-build/socket_probe',dest/'socket_probe');os.chmod(dest/'socket_probe',0o700)
+  shutil.copyfile(dest/'identity-build/public_identity',dest/'public_identity');os.chmod(dest/'public_identity',0o700)
+  tool=importlib.machinery.SourceFileLoader('native_disk_install',str(PKG/'install')).load_module()
+  pin,base_identity=tool.digest_file(a.base,release['image']['bytes'])
+  if pin!=release['image']['sha256']:raise ValueError('Selected base bytes differ')
+  spec=release['image']
+  state={'schema':'exp002-native-install-1','release':str(pathlib.Path(a.release).absolute()),'release_sha256':a.release_sha256,'artifacts':str(pathlib.Path(a.artifacts).absolute()),'base':str(pathlib.Path(a.base).absolute()),'image':spec,'base_identity':base_identity,'native_run':False}
+  for k,n in [('helper','held_spawn.so'),('probe','socket_probe'),('identity_helper','public_identity')]:state[k]={'file':n,'sha256':sha(dest/n)}
+  json_write(dest/'native-install.json',state)
+  print('Consumer binaries and selected read-only base verified. No VM started. Run requires an isolated TAP/vhost-capable Linux host.')
+ finally:json_write(dest/'install-commands.json',logs)
+
+def execute(a):
+ root,installed=load_install(a.installation)
+ # Installation/source and run directory must be controlled by this same user.
+ if root.stat().st_uid!=os.geteuid() or root.stat().st_mode&0o077:raise ValueError('Private installation ownership/mode')
+ if not os.access('/dev/kvm',os.R_OK|os.W_OK):raise ValueError('KVM unavailable')
+ if not a.inherited_network and (os.geteuid()!=0 or not pathlib.Path('/dev/net/tun').exists() or not pathlib.Path('/dev/vhost-net').exists()):
+  raise ValueError('Standalone run requires isolated network namespace privilege and TAP/vhost devices; no transport fallback')
+ deployment.load(installed['release'],installed['release_sha256'],installed['artifacts'])
+ run=pathlib.Path(a.directory).absolute();run.mkdir(mode=0o700);started=time.monotonic();end=started+40
+ result={'schema':'exp002-native-run-1','state':'INCOMPLETE','started':started,'primary':None,'guest_receipt':str(run/'native/receipt.json')}
+ fds=[];retained=[];delegated=False
+ try:
+  def command(args):
+   left=end-time.monotonic()
+   if left<=0:raise RuntimeError('Prelaunch deadline')
+   r=subprocess.run(list(map(str,args)),capture_output=True,text=True,timeout=min(20,left))
+   if time.monotonic()>=end or r.returncode:raise RuntimeError('Disk preparation failed/late')
+   return r.stdout
+  tool=importlib.machinery.SourceFileLoader('native_disk_install',str(PKG/'install')).load_module()
+  image=installed['image'];spec={'image_bytes':image['bytes'],'image_sha256':image['sha256'],'virtual_bytes':image['virtual_bytes']}
+  tool.prepare(spec,installed['base'],run/'disks',run=command,verified=(image['sha256'],installed['base_identity']))
+  import provision
+  def derive(helper,seed,deadline):return provision.derive(helper,seed,min(deadline,end))
+  provision.create(run/'identities',root/'public_identity',installed['identity_helper']['sha256'],derive_fn=derive)
+  if a.inherited_network:
+   # Explicit development/integration injection; not the public network creator.
+   deployment.network(a.inherited_network,a.network_sha256)
+   network=pathlib.Path(a.inherited_network);network_pin=a.network_sha256
+   result['network_scope']='EXPLICIT_INHERITED_DEV_INPUT_NOT_STANDALONE_QUALIFICATION'
+  else:
+   import network_owner
+   network,fds=network_owner.create(run,end);network_pin=sha(network)
+   result['network_scope']='NEW_ISOLATED_LINUX_NAMESPACE_TAP_VHOST'
+  args=['boot_pair','--started',str(started),'--directory',str(run/'native'),'--helper',str(root/'held_spawn.so'),'--prepared',str(run/'disks'),'--modules','--socket-probe',str(root/'socket_probe'),'--private-identities',str(run/'identities'),'--identity-manifest-sha256',sha(run/'identities/public.json'),'--paired-route','--preliminary','--deployment',installed['release'],'--deployment-sha256',installed['release_sha256'],'--artifacts',installed['artifacts'],'--network-manifest',str(network),'--network-sha256',network_pin]
+  import boot_pair
+  # The launcher consumes the network-owner originals. Retain independent
+  # duplicates, never close recycled descriptor numbers after it returns.
+  for fd in fds:retained.append(os.dup(fd))
+  original=sys.argv;sys.argv=args
+  try:
+   delegated=True
+   rc=boot_pair.main()
+  finally:sys.argv=original
+  if rc:raise RuntimeError('Native run incomplete; original receipt preserved')
+  from read_preliminary import verify
+  checked=verify(json.loads((run/'native/receipt.json').read_text()))
+  json_write(run/'verification.json',checked)
+  import cleanup
+  cleanup.capture(run)
+  result['state']='PASS_FRESH_NATIVE_DELIVERY';result['verification']=checked
+ except Exception as e:result['primary']=type(e).__name__+': '+str(e)
+ finally:
+  for fd in retained + ([] if delegated else fds):
+   try:os.close(fd)
+   except OSError:pass # Independent retained duplicates only.
+  result['elapsed_s']=time.monotonic()-started
+  json_write(run/'run.json',result)
+ print(json.dumps({'state':result['state'],'primary':result['primary'],'directory':str(run)}))
+ return 0 if result['state']=='PASS_FRESH_NATIVE_DELIVERY' else 1
+
+def main():
+ p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest='action',required=True)
+ i=sub.add_parser('install')
+ for name in ('release','release-sha256','artifacts','base','directory'):i.add_argument('--'+name,required=True)
+ r=sub.add_parser('run')
+ for name in ('installation','directory'):r.add_argument('--'+name,required=True)
+ r.add_argument('--inherited-network',help=argparse.SUPPRESS);r.add_argument('--network-sha256',help=argparse.SUPPRESS)
+ v=sub.add_parser('verify');v.add_argument('directory')
+ c=sub.add_parser('clean');c.add_argument('directory')
+ a=p.parse_args()
+ if a.action=='install':install(a);return 0
+ if a.action=='run':return execute(a)
+ if a.action=='clean':
+  import cleanup
+  print(json.dumps(cleanup.clean(a.directory),indent=2));return 0
+ from read_preliminary import verify
+ result=verify(json.loads((pathlib.Path(a.directory)/'native/receipt.json').read_text()))
+ print(json.dumps(result,indent=2));return 0
+if __name__=='__main__':
+ try:sys.exit(main())
+ except Exception as e:print('INCOMPLETE: '+str(e),file=sys.stderr);sys.exit(1)

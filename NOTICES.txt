@@ -1,0 +1,28 @@
+EXP-002 selected consumer sources
+
+Original consumer sources and documentation in this selected release are licensed
+under the accompanying MIT LICENSE, as approved by the user on 2026-10-16.
+This applies to original consumer material only, not the entire private repository.
+Third-party material retains its own licenses. Product modules, distro image
+contents and corresponding product sources are not relicensed under consumer MIT.
+
+The selected public BLAKE3 C implementation is upstream version 1.8.2, commit
+df610ddc3b93841ffc59a87e3da659a15910eb46. Its exact LICENSE_A2, LICENSE_A2LLVM and
+LICENSE_CC0 files and acquired-file provenance are included under
+experiments/exp-002-none-forwarding/signer-adapter/public-blake3/.
+These third-party notices remain separate from the consumer MIT license.
+
+OpenSSL, zlib, Python, QEMU and host development/runtime tools are external
+prerequisites, not implementations bundled in this source archive. The PDF embeds
+subsets of Source Sans Pro and TeX fonts; it is the previously approved PDF.
+
+No image, module binary, identity key, private header, Git history or old guest
+receipt is bundled. The separate native-assets manifest identifies required
+payloads. The production edition supplies separate source and notice artifacts
+and exact distro-source references; no third-party material is relicensed.
+The complete kmod tree is not exported.
+
+Production1.0.0: separate module-sources.tar.gz and image-notices.tar.gz accompany
+the binaries. release/image-sources.json provides exact official distro-source
+references. Original license texts remain authoritative; consumer MIT does not
+relicense any distro or product material. Independent host validation is pending.

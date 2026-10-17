@@ -1,0 +1,219 @@
+#!/usr/bin/env python3
+"""Verified image/cache and disk preparation. Never boots guests or changes host policy."""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import stat
+import subprocess
+import sys
+
+
+class Refusal(Exception):
+    pass
+
+
+def digest_file(path, expected_size):
+    flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK
+    fd = os.open(path, flags)
+    with os.fdopen(fd, "rb") as stream:
+        before = os.fstat(stream.fileno())
+        if not stat.S_ISREG(before.st_mode) or before.st_size != expected_size:
+            raise Refusal("Base must be a regular file with the declared size")
+        if before.st_mode & 0o222:
+            raise Refusal("Base must already be read-only; installer will not chmod it")
+        digest = hashlib.sha256()
+        count = 0
+        while True:
+            block = stream.read(min(1048576, expected_size + 1 - count))
+            if not block:
+                break
+            count += len(block)
+            digest.update(block)
+            if count > expected_size:
+                raise Refusal("Base grew while hashing")
+        after = os.fstat(stream.fileno())
+        if count != expected_size or identity(before) != identity(after):
+            raise Refusal("Base changed while hashing")
+        return digest.hexdigest(), identity(after)
+
+
+def identity(info):
+    return (info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns, info.st_ctime_ns)
+
+
+def unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise Refusal("Duplicate manifest field")
+        result[key] = value
+    return result
+
+
+def manifest(path, expected):
+    with open(path, "rb") as stream:
+        raw = stream.read(16385)
+    if len(raw) > 16384 or hashlib.sha256(raw).hexdigest() != expected:
+        raise Refusal("Manifest size/hash mismatch")
+    value = json.loads(raw, object_pairs_hook=unique_object)
+    fields = {
+        "schema", "distribution", "image_sha256", "image_bytes", "virtual_bytes"
+    }
+    if not isinstance(value, dict) or set(value) not in (fields, fields | {"image_url"}):
+        raise Refusal("Unsupported manifest fields")
+    if value["schema"] != "prp-base-v1":
+        raise Refusal("Unsupported manifest schema")
+    for field in ("image_bytes", "virtual_bytes"):
+        if type(value[field]) is not int or value[field] <= 0:
+            raise Refusal("Invalid image size")
+    sha = value["image_sha256"]
+    if not isinstance(sha, str) or len(sha) != 64 or any(c not in "0123456789abcdef" for c in sha):
+        raise Refusal("Invalid image digest")
+    if not isinstance(value["distribution"], str) or not 1 <= len(value["distribution"]) <= 128:
+        raise Refusal("Invalid distribution label")
+    return value
+
+
+def command(args):
+    # Tool is locally installed, never obtained from an image or release archive.
+    return subprocess.run(args, check=True, capture_output=True, text=True, timeout=30).stdout
+
+
+def prepare(spec, base, destination, run=command, verified=None):
+    base = Path(base).absolute()
+    destination = Path(destination).absolute()
+    if verified is None:
+        checksum, original = digest_file(base, spec["image_bytes"])
+    else:
+        # Reuse this owner's previous complete hash only for the same immutable
+        # regular inode. A changed/missing identity refuses instead of hashing
+        # a multi-GiB file inside the guest launch deadline.
+        checksum, previous = verified
+        current = os.stat(base, follow_symlinks=False)
+        original = identity(current)
+        if (not stat.S_ISREG(current.st_mode) or current.st_mode & 0o222
+                or current.st_size != spec["image_bytes"]
+                or original != tuple(previous)):
+            raise Refusal("Previously verified read-only base identity changed")
+    if checksum != spec["image_sha256"]:
+        raise Refusal("Base hash mismatch")
+    info = json.loads(run(["qemu-img", "info", "--output=json", str(base)]))
+    if (info.get("format") != "qcow2" or info.get("virtual-size") != spec["virtual_bytes"]
+            or any(k in info for k in ("backing-filename", "full-backing-filename"))
+            or info.get("encrypted", False)
+            or info.get("format-specific", {}).get("data", {}).get("data-file")):
+        raise Refusal("Unexpected image format, backing chain, encryption or external data")
+    if identity(os.stat(base, follow_symlinks=False)) != original:
+        raise Refusal("Base identity changed before preparation")
+    # Exclusive creation. A failed run is retained; never retry into this directory.
+    destination.mkdir(mode=0o700)
+    receipt = {"schema": "prp-install-v2", "state": "INCOMPLETE", "base": str(base),
+               "image_sha256": checksum, "base_identity": original, "overlays": [],
+               "guest_started": False, "runtime_ready": False, "primary": None,
+               "directory_identity": list(identity(os.stat(destination, follow_symlinks=False))[:2]),
+               "overlay_identities": {}}
+    try:
+        for name in ("endpoint.qcow2", "dut.qcow2"):
+            overlay = destination / name
+            run(["qemu-img", "create", "-f", "qcow2", "-F", "qcow2", "-b", str(base), str(overlay)])
+            receipt["overlays"].append(name)
+            overlay_before = os.stat(overlay, follow_symlinks=False)
+            if not stat.S_ISREG(overlay_before.st_mode) or overlay_before.st_nlink != 1:
+                raise Refusal("Overlay must be a distinct regular file")
+            receipt["overlay_identities"][name] = list(identity(overlay_before))
+            created = json.loads(run(["qemu-img", "info", "--output=json", str(overlay)]))
+            if identity(os.stat(overlay, follow_symlinks=False)) != identity(overlay_before):
+                raise Refusal("Overlay changed during inspection")
+            if (created.get("format") != "qcow2"
+                    or created.get("virtual-size") != spec["virtual_bytes"]
+                    or created.get("backing-filename") != str(base)
+                    or created.get("backing-filename-format") != "qcow2"):
+                raise Refusal("Created overlay does not match its declared base")
+        if identity(os.stat(base, follow_symlinks=False)) != original:
+            raise Refusal("Base changed during preparation")
+        seen = {original[:2]}
+        for name, pin in receipt["overlay_identities"].items():
+            current = os.stat(destination / name, follow_symlinks=False)
+            if (identity(current) != tuple(pin) or current.st_nlink != 1
+                    or identity(current)[:2] in seen):
+                raise Refusal("Overlay changed/aliased before receipt")
+            seen.add(identity(current)[:2])
+        receipt["state"] = "DISK_PREPARATION_COMPLETE"
+    except Exception as exc:
+        receipt["primary"] = type(exc).__name__ + ": " + str(exc)
+        raise
+    finally:
+        try:
+            with open(destination / "installation.json", "x", encoding="utf-8") as out:
+                json.dump(receipt, out, indent=2)
+                out.write("\n")
+        except Exception as exc:
+            if receipt["primary"] is None:
+                raise
+            print("Secondary receipt failure: " + str(exc), file=sys.stderr)
+    return receipt
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--plan", action="store_true")
+    parser.add_argument("--check-host", action="store_true", help="Read-only inventory; no download or QEMU execution")
+    parser.add_argument("--manifest")
+    parser.add_argument("--manifest-sha256", help="Independently trusted release manifest digest")
+    parser.add_argument("--base", help="Already downloaded, read-only local image")
+    parser.add_argument("--cache", help="Download/reuse image in an exclusively owned cache")
+    parser.add_argument("--download-seconds", type=float, help="Explicit absolute download/cache-check timeout")
+    parser.add_argument("--directory", help="New private preparation directory")
+    args = parser.parse_args()
+    print("EXP-002: test equal useful delivery with COPY and REFERENCE; speedup is optional.")
+    print("Preparation uses one verified read-only base and two thin guest overlays.")
+    print("No packages, host settings, network configuration, keys or VMs are changed/started.")
+    print("Overlays may each grow toward virtual disk size; thin does not mean bounded growth.")
+    print("Runtime resources, module distribution and functional qualification remain separate.")
+    if args.plan:
+        print("Use --base offline, or --cache with a pinned HTTPS manifest and --download-seconds.")
+        print("Download is one attempt, no redirects/retries; partial evidence is retained.")
+        print("Public release/image clearance and the runtime launcher remain pending.")
+        return
+    if args.check_host:
+        from host_check import inspect, assess
+        if not args.directory:
+            raise Refusal("--check-host requires the intended --directory")
+        if bool(args.manifest) != bool(args.manifest_sha256):
+            raise Refusal("Supply both manifest and trusted digest")
+        spec = manifest(args.manifest, args.manifest_sha256) if args.manifest else None
+        result = assess(inspect(args.directory, args.cache), spec["image_bytes"] if spec else 0, bool(args.cache))
+        result["image_size_known"] = spec is not None
+        print(json.dumps(result, indent=2))
+        if result["preparation_blockers"]:
+            raise Refusal("Host preparation prerequisites missing")
+        return
+    if (not all((args.manifest, args.manifest_sha256, args.directory))
+            or bool(args.base) == bool(args.cache)):
+        raise Refusal("Provide pinned manifest, new directory and exactly one of --base/--cache")
+    if os.path.lexists(args.directory):
+        raise Refusal("Preparation directory already exists; no download started")
+    spec = manifest(args.manifest, args.manifest_sha256)
+    from host_check import inspect, assess
+    cached = args.cache and os.path.lexists(Path(args.cache) / (spec["image_sha256"] + ".qcow2"))
+    host = assess(inspect(args.directory, args.cache), spec["image_bytes"], bool(args.cache and not cached))
+    print(json.dumps(host, indent=2), flush=True)
+    if host["preparation_blockers"]:
+        raise Refusal("Host preparation prerequisites missing; no download or QEMU operation started")
+    print(json.dumps({"base_bytes": spec["image_bytes"], "virtual_bytes_per_guest": spec["virtual_bytes"]}))
+    base = args.base
+    if args.cache:
+        from image_cache import download
+        print("Image source: " + str(spec.get("image_url", "verified existing cache only")), flush=True)
+        base = download(spec, args.cache, args.download_seconds, digest_file)
+    print(json.dumps(prepare(spec, base, args.directory), indent=2))
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as error:
+        print("INCOMPLETE: " + str(error), file=sys.stderr)
+        sys.exit(1)

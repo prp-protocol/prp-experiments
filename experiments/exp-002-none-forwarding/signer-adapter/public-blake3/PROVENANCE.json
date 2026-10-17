@@ -1,0 +1,40 @@
+{
+  "origin": "Official public upstream acquisition9d7a8ec; no sibling-source copy",
+  "commit": "df610ddc3b93841ffc59a87e3da659a15910eb46",
+  "tag": "1.8.2",
+  "signature_verified": false,
+  "files": {
+    "blake3.c": {
+      "sha256": "0cd1d6aa002ac44cbf0b0cff5d3f23df3fd190fdc25dfc6d7f3de2afeffba5bd",
+      "url": "https://raw.githubusercontent.com/BLAKE3-team/BLAKE3/df610ddc3b93841ffc59a87e3da659a15910eb46/c/blake3.c"
+    },
+    "blake3_dispatch.c": {
+      "sha256": "a6cef5c497d95c8f7fcde6e1a8e140637f3260b31e911319e69cf5069459b635",
+      "url": "https://raw.githubusercontent.com/BLAKE3-team/BLAKE3/df610ddc3b93841ffc59a87e3da659a15910eb46/c/blake3_dispatch.c"
+    },
+    "blake3_portable.c": {
+      "sha256": "2bc25b0dad67b4329d0b49cfa075ab2b0d04e424addbddc4e9c389c52a192524",
+      "url": "https://raw.githubusercontent.com/BLAKE3-team/BLAKE3/df610ddc3b93841ffc59a87e3da659a15910eb46/c/blake3_portable.c"
+    },
+    "blake3.h": {
+      "sha256": "ca1e562d173c264c19b2a89d179f5fa94000966b6b8f4182b6682e136a8cbfdf",
+      "url": "https://raw.githubusercontent.com/BLAKE3-team/BLAKE3/df610ddc3b93841ffc59a87e3da659a15910eb46/c/blake3.h"
+    },
+    "blake3_impl.h": {
+      "sha256": "65cf3597897090e8ded5968e3c26304a65b0091e8fabfa434c3d1a5eef29cb17",
+      "url": "https://raw.githubusercontent.com/BLAKE3-team/BLAKE3/df610ddc3b93841ffc59a87e3da659a15910eb46/c/blake3_impl.h"
+    },
+    "LICENSE_A2": {
+      "sha256": "00fcc7a934ddbc9ece2a7cc063ac788e284b703b1d705ccbba72d462aa97921e",
+      "url": "https://raw.githubusercontent.com/BLAKE3-team/BLAKE3/df610ddc3b93841ffc59a87e3da659a15910eb46/LICENSE_A2"
+    },
+    "LICENSE_A2LLVM": {
+      "sha256": "a5695f57ea0c221e0e8b7d784ff774c35e88c3d3270353646a925880bb3492cc",
+      "url": "https://raw.githubusercontent.com/BLAKE3-team/BLAKE3/df610ddc3b93841ffc59a87e3da659a15910eb46/LICENSE_A2LLVM"
+    },
+    "LICENSE_CC0": {
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+      "url": "https://raw.githubusercontent.com/BLAKE3-team/BLAKE3/df610ddc3b93841ffc59a87e3da659a15910eb46/LICENSE_CC0"
+    }
+  }
+}

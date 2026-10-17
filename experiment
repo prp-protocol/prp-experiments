@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+"""Run, verify or clean a local EXP-002 reproduction."""
+import pathlib, sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent / 'distribution/public-experiments/native-package'))
+from public_entry import main
+if __name__ == '__main__':
+    sys.exit(main('experiment'))

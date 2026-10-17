@@ -1,0 +1,37 @@
+{
+  "schema": "exp002-native-assets-1",
+  "kernel": "5.14.0-687.39.1.el9_8.x86_64",
+  "source_commit": "beb5f9d118022846b3048a1e98d5dea52988ce67",
+  "image": {
+    "sha256": "cd6382d1c2bbfa085995fae0d8529acbc268d22e05e877258ede4e59b84695ea",
+    "bytes": 1658191872,
+    "virtual_bytes": 10737418240
+  },
+  "modules": {
+    "blake3": {
+      "file": "blake3.ko",
+      "bytes": 486864,
+      "sha256": "72ff9b6fd5ee6fac7400875b7def72ee9550895aafb70c4fcbdb5940961c6fd8"
+    },
+    "ed25519": {
+      "file": "ed25519.ko",
+      "bytes": 381216,
+      "sha256": "53d0eeff8e3a5f1d394ea90545305df5c15f1f937cd3ac66ba074628390bb036"
+    },
+    "ed25519_blake3": {
+      "file": "ed25519_blake3.ko",
+      "bytes": 184888,
+      "sha256": "6602785d853e2ffb40dddb08ba6f1fea020e3c192ac9869b60898339cb3b6416"
+    },
+    "prp_adjacencies": {
+      "file": "prp_adjacencies.ko",
+      "bytes": 11330752,
+      "sha256": "ca12961d790e37adcd8be39ec6f6e1221ce7f4c56095aa27db8dcfacb0249c89"
+    },
+    "prp_carrier_ethernet": {
+      "file": "prp_carrier_ethernet.ko",
+      "bytes": 922584,
+      "sha256": "b96e3b1bd2133703d52564f6bdba79f31c82236c41923a86774ffdf487f8d6a4"
+    }
+  }
+}
