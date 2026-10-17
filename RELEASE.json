@@ -5,6 +5,11 @@
   "announced": false,
   "files": [
     {
+      "path": ".gitattributes",
+      "bytes": 168,
+      "sha256": "ca7d19788a487d4cdfba6cd6ad454fec7a9181b5f9ed952e17361f7d82e451ff"
+    },
+    {
       "path": ".gitignore",
       "bytes": 28,
       "sha256": "612a3ec96abf4d322621ebbb2fd9e3dea49efc20d4846812f504bf77d69b9818"
@@ -26,8 +31,8 @@
     },
     {
       "path": "PUBLIC-README.txt",
-      "bytes": 4581,
-      "sha256": "6933a66653fda3b96b6d066ace1bbee26255cbaa58cfad76b19923c1a0e4e4ec"
+      "bytes": 5178,
+      "sha256": "450a3962e816e377d4a5941125a1542ca8bd01cfc85e20739b2583f1eb787bd9"
     },
     {
       "path": "README.md",
@@ -36,13 +41,13 @@
     },
     {
       "path": "README.txt",
-      "bytes": 4581,
-      "sha256": "6933a66653fda3b96b6d066ace1bbee26255cbaa58cfad76b19923c1a0e4e4ec"
+      "bytes": 5178,
+      "sha256": "450a3962e816e377d4a5941125a1542ca8bd01cfc85e20739b2583f1eb787bd9"
     },
     {
       "path": "SOURCE-MANIFEST.json",
-      "bytes": 23689,
-      "sha256": "b5c22d7155c5b43f04e73e66e4d47baeefa8dfa4b6d979bc9fd7e43105c20988"
+      "bytes": 23990,
+      "sha256": "941a64805023e656e1d69952f0abc17be3fb91822504db677d38fa7a20865f2f"
     },
     {
       "path": "distribution/public-experiments/native-package/cleanup.py",
@@ -653,6 +658,11 @@
       "path": "release/native-assets.json",
       "bytes": 1171,
       "sha256": "e67440ba404b2ea25517011c6db94a79e8423112ef57423998e8b83cdda710b3"
+    },
+    {
+      "path": "repair-checkout.py",
+      "bytes": 2626,
+      "sha256": "1760efedb1427de97218a983e6cffaa969c812a1691aac24d223f6ed69a03576"
     }
   ]
 }

@@ -1,0 +1,3 @@
+# Preserve the exact published bytes, including LF scripts and pinned manifests.
+# Hash-verified artifacts must not undergo Git newline conversion on checkout.
+* -text

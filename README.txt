@@ -73,3 +73,13 @@ channel. Do not substitute artifacts with a similar name or newer version.
 The immutable release URL is:
 https://download.prp-protocol.org/exp002/releases/1.0.0/
 The GitHub export contains only the allowlisted source and release documents.
+
+Checkout line endings
+Release files have exact pinned bytes. Git attributes disable newline conversion,
+including when core.autocrlf=true. If an older checkout reports python3\\r or a
+manifest hash mismatch after conversion, update the repository and run:
+  python3 repair-checkout.py
+The repair first verifies every listed file against RELEASE.json. It changes
+only CRLF-to-LF conversions whose result matches the exact published size/hash;
+local content edits refuse the repair before writes. Existing installation,
+artifacts and run directories are untouched. This is not an experiment retry.
