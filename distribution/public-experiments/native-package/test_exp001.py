@@ -15,6 +15,13 @@ runner = importlib.machinery.SourceFileLoader('test_exp001_runner', str(exp001.R
 source = importlib.machinery.SourceFileLoader('test_exp001_source', str(exp001.EXP/'source_bundle.py')).load_module()
 
 class Exp001Tests(unittest.TestCase):
+    def test_all_runtime_input_pins_match_selected_bytes(self):
+        inputs=json.loads((exp001.EXP/'inputs.json').read_text())
+        self.assertEqual(inputs['libprp_commit'],runner.PIN)
+        for name,expected in inputs['sha256'].items():
+            with self.subTest(path=name):
+                self.assertEqual(hashlib.sha256((exp001.ROOT/name).read_bytes()).hexdigest(),expected)
+
     def test_public_source_complete_licensed_subset(self):
         manifest,files=source.verified_files()
         self.assertEqual(len(files),260)
