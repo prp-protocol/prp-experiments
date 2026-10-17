@@ -96,6 +96,10 @@ def main(kind, argv=None, runner=subprocess.run):
                   'No automatic package installation, privilege elevation or artifact publication.\n'
                   'Independent clean-host qualification is pending; installation and execution report actual outcomes.')
             return 0
+        action = 'install' if isinstance(args, argparse.Namespace) else args[0]
+        if action in ('install', 'run'):
+            from host_tools import require
+            require(action)
         if isinstance(args, argparse.Namespace):
             if os.geteuid() != 0:
                 raise ValueError('Install/run must use the same root owner; no automatic sudo')

@@ -83,3 +83,12 @@ The repair first verifies every listed file against RELEASE.json. It changes
 only CRLF-to-LF conversions whose result matches the exact published size/hash;
 local content edits refuse the repair before writes. Existing installation,
 artifacts and run directories are untouched. This is not an experiment retry.
+
+Missing host tools
+Install/run check qemu-img, genisoimage and the exact QEMU executable before
+downloads, creating a run, identities or networking. Install also checks cc and
+readelf. These are presence checks, not runtime qualification or library-header
+checks. On Ubuntu/Debian: sudo apt install genisoimage supplies the ISO tool.
+If a previous run failed, preserve its receipts and use a new run directory after
+resolving the cause. Do not rerun installation when it already succeeded; existing
+verified downloads and consumer binaries can be reused. No automatic retry occurs.

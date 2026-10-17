@@ -19,6 +19,8 @@ def load_install(path):
  return root,d
 
 def install(a):
+ from host_tools import require
+ require('install')
  release,mods=deployment.load(a.release,a.release_sha256,a.artifacts)
  dest=pathlib.Path(a.directory).absolute();dest.mkdir(mode=0o700)
  logs=[]
@@ -44,6 +46,8 @@ def install(a):
  finally:json_write(dest/'install-commands.json',logs)
 
 def execute(a):
+ from host_tools import require
+ require('run')
  root,installed=load_install(a.installation)
  # Installation/source and run directory must be controlled by this same user.
  if root.stat().st_uid!=os.geteuid() or root.stat().st_mode&0o077:raise ValueError('Private installation ownership/mode')

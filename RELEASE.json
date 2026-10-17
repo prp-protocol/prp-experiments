@@ -31,8 +31,8 @@
     },
     {
       "path": "PUBLIC-README.txt",
-      "bytes": 5178,
-      "sha256": "450a3962e816e377d4a5941125a1542ca8bd01cfc85e20739b2583f1eb787bd9"
+      "bytes": 5761,
+      "sha256": "4fe421eb447a03916816ae69779847fc030311a05b6bcfe6104a478725facd15"
     },
     {
       "path": "README.md",
@@ -41,13 +41,13 @@
     },
     {
       "path": "README.txt",
-      "bytes": 5178,
-      "sha256": "450a3962e816e377d4a5941125a1542ca8bd01cfc85e20739b2583f1eb787bd9"
+      "bytes": 5761,
+      "sha256": "4fe421eb447a03916816ae69779847fc030311a05b6bcfe6104a478725facd15"
     },
     {
       "path": "SOURCE-MANIFEST.json",
-      "bytes": 23990,
-      "sha256": "941a64805023e656e1d69952f0abc17be3fb91822504db677d38fa7a20865f2f"
+      "bytes": 24184,
+      "sha256": "279b3a186c4884c8813e4e3d4bbe5ebb67ce04408ef078d4d4772b1dbb11f8e1"
     },
     {
       "path": "distribution/public-experiments/native-package/cleanup.py",
@@ -60,9 +60,14 @@
       "sha256": "1c547cabaf3a439269b4457c115a4e921fecf626306ace4a3e2e217ee19cd046"
     },
     {
+      "path": "distribution/public-experiments/native-package/host_tools.py",
+      "bytes": 999,
+      "sha256": "2795e0b2eefb75759670c547a09d73b7661dcd103857f450f7f42f7e0b96a59d"
+    },
+    {
       "path": "distribution/public-experiments/native-package/native",
-      "bytes": 8179,
-      "sha256": "e054d25ecd4ef9c5119350176f63509728b0ac560969254cde001428f3ad2c56"
+      "bytes": 8279,
+      "sha256": "92135fb97c2caca49912fd23eeb3e17cf5ff071d51a1b5656f9052488b179717"
     },
     {
       "path": "distribution/public-experiments/native-package/network_owner.py",
@@ -71,8 +76,8 @@
     },
     {
       "path": "distribution/public-experiments/native-package/public_entry.py",
-      "bytes": 8228,
-      "sha256": "146a2d6b3183b5614911495991070079739d8258fc1a5c2a5a0b9252d36061c2"
+      "bytes": 8420,
+      "sha256": "8c6aef99659b5ac8e7f87907ae4a09f6eeb3a5cb44f18f3e996f670b4c1dd3aa"
     },
     {
       "path": "distribution/public-experiments/native-package/release_download.py",
