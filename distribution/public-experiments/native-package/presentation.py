@@ -6,6 +6,17 @@ def comparison(result, directory):
     print('\nEXP-002 — COPY and REFERENCE forwarding')
     print('Result: '+result['state'])
     print(f"Payload: {result['payload_bytes']} bytes; warmup: {result['warmup']}; repetitions: {result['repetitions']}.")
+    peel=result.get('onion_peeling')
+    if peel and peel['state']=='PASS_CAPTURED_ONION_PEEL':
+        geometry=peel['geometry']
+        print('ONION result: one 42-byte DIRECT layer removed between the two interfaces.')
+        print(f"Verified {peel['records']} input/output frame pairs, including warmup.")
+        print(f"PRP unit: {geometry['input_prp_bytes']:,} -> {geometry['output_prp_bytes']:,} bytes; "
+              f"{geometry['preserved_bytes']:,} child/annex bytes preserved exactly.")
+        print('The forwarding alias/framing changes; the remaining child and annex are unchanged.')
+        print('Access-limit result: NOT ESTABLISHED for the complete native path.')
+        print('Byte equality and copy counters do not show every CPU read. Current transport')
+        print('may copy the body; routing-only CPU cost and device offload remain unmeasured.')
     print('Mode          Verified bytes     Elapsed (ms)       MiB/s')
     for row in result['runs']:
         print(f"{row['mode']:<13} {row['verified_payload_bytes']:>14,} {row['elapsed_ns']/1e6:>16.3f} {row['MiB_per_s']:>11.3f}")

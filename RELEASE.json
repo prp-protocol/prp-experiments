@@ -1,6 +1,6 @@
 {
   "schema": "prp-experiments-source-release-1",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "native_assets_version": "1.0.0",
   "independent_host_validation": "EXP002_USER_REPORTED_PRELIMINARY_PASS; EXP001_LOCAL_ISOLATED_EXPORT_PASS",
   "announced": false,
@@ -32,8 +32,8 @@
     },
     {
       "path": "PUBLIC-README.txt",
-      "bytes": 10243,
-      "sha256": "5a8fe7ff2bbf7d82f28a656d5a2e9b1783b29316b7d1fd62d55518f024be7c6c"
+      "bytes": 12156,
+      "sha256": "c3baf23e7852d0e52da5db41e31201f32afef0e0ebaf2725b57b137764807a4b"
     },
     {
       "path": "README.md",
@@ -47,8 +47,8 @@
     },
     {
       "path": "SOURCE-MANIFEST.json",
-      "bytes": 27720,
-      "sha256": "30c5612b68ba0cd95002e0244c9eb68f509f0f6c85c704e62e3092b4a387aa94"
+      "bytes": 27915,
+      "sha256": "a3a167f8bd2330d1ff821f4ee4e794d9433d26bdd8a3596872596ac0679f2b83"
     },
     {
       "path": "distribution/public-experiments/native-package/cleanup.py",
@@ -87,8 +87,8 @@
     },
     {
       "path": "distribution/public-experiments/native-package/presentation.py",
-      "bytes": 3935,
-      "sha256": "33613b9bfa9faf9d6768eb8a7780da3c7ec78d0666e5ca5ee1a2d2ce3cc33984"
+      "bytes": 4811,
+      "sha256": "f0196fba49cfb4243c4d19afadbe005d57e9d3e2a766023fcbb0c4bd9d25fa88"
     },
     {
       "path": "distribution/public-experiments/native-package/public_entry.py",
@@ -512,8 +512,8 @@
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/read_preliminary.py",
-      "bytes": 10248,
-      "sha256": "c567ddc7ccc6ed50a9ac5ed95a61f00432c4be3f9c5e05cbcd31e586d7799852"
+      "bytes": 11577,
+      "sha256": "28489ceb54c4d2f9b56eebfa65ec788a09f816f918e8a9efa6e776643755c9d4"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/receipt_store.c",
@@ -759,6 +759,11 @@
       "path": "tools/reproduce-exp-001",
       "bytes": 20076,
       "sha256": "75cca2b264d846238eef8ac40f0dee0f8de3d40b01798a3c6879aa9d00085909"
+    },
+    {
+      "path": "distribution/public-experiments/native-package/test_onion.py",
+      "bytes": 2517,
+      "sha256": "37a5d0bd01f601dbc4615474a4fa6118a43dceba2ba65d13461fc531476a9d31"
     }
   ],
   "full_cycle_qualification": "HOST_COMPOSITION_TESTS; NO_NEW_NATIVE_CYCLE"

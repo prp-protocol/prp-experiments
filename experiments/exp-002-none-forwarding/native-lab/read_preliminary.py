@@ -38,6 +38,19 @@ def raw_rows(row):
  need(type(row['raw_count']) is int and row['raw_count']==len(rows),'record count')
  return rows
 
+def onion_peel(incoming, outgoing, index, size):
+ # Offline full-byte oracle, never a measurement of native memory accesses.
+ need(catalogue.decode(incoming,0,index,True,size),'incoming onion')
+ need(catalogue.decode(outgoing,0,index,False,size),'outgoing onion')
+ need(len(incoming)-len(outgoing)==42,'one DIRECT layer removed')
+ need(incoming[52:94]==outgoing[10:52],'preserved child layer')
+ need(incoming[94:]==outgoing[52:],'preserved annex')
+ return dict(input_prp_bytes=len(incoming),output_prp_bytes=len(outgoing),
+             removed_direct_bytes=42,new_framing_bytes=10,
+             child_input=[52,94],child_output=[10,52],
+             annex_input=[94,len(incoming)],annex_output=[52,len(outgoing)],
+             preserved_bytes=size+56)
+
 def verify(receipt):
  need(not receipt['primary'] and not receipt['secondary'],'run/cleanup failed')
  g=receipt['guests'];need(set(g)=={'endpoint','dut'},'two guests')
@@ -89,7 +102,7 @@ def verify(receipt):
   need(not flags and not error and not any(h[61:]) and 0<before<=after,'raw success/time')
   need(kept==len(b)==result==(size+144,36,size+80,size+122)[lane-1],'raw extent')
   records[index,lane]=dict(body=b,before=before,after=after,address=h[41:61],alen=alen)
- sequences=[];peers=set()
+ sequences=[];peers=set();peel_digest=hashlib.sha256();geometry=None
  for i in range(total):
   tx,ack,rx,ing=(records[i,l] for l in (1,2,3,4));a,b=catalogue.packets(0,i,size)
   need(tx['body'][36:]==a and catalogue.decode(tx['body'][36:],0,i,True,size),'input oracle')
@@ -101,6 +114,9 @@ def verify(receipt):
    need(r['body']==dst+src+b'\x88\xfb'+payload,'complete Ethernet/PRP/payload oracle')
    family_a,proto,ifindex,hatype,ptype,halen,addr=struct.unpack('<HHiHBB8s',r['address'])
    need(r['alen']==20 and family_a==17 and ifindex==ix and ptype==kind and halen==6 and addr[:6]==src,'capture endpoint')
+  geometry=onion_peel(ing['body'][14:],rx['body'][14:],i,size)
+  for frame in (ing['body'],rx['body']):
+   peel_digest.update(struct.pack('!I',len(frame)));peel_digest.update(frame)
   need(tx['after']<=ack['before']<=ack['after']<=ing['before']<=ing['after']<=rx['before']<=rx['after'],'operation chronology')
   need(rx['after']-tx['before']<40000000,'response deadline')
  need(sequences==list(range(sequences[0],sequences[0]+total)) and len(peers)==1,'sequence/peer continuity')
@@ -125,7 +141,11 @@ def verify(receipt):
    delta.update(actual)
   results.append(dict(mode='COPY' if mode==1 else 'REFERENCE',verified_payload_bytes=measured*size,elapsed_ns=end-begin,microseconds=(end-begin)/1000,MiB_per_s=measured*size*1e9/(end-begin)/1048576,counters=delta))
  results.sort(key=lambda x:x['mode'])
- return dict(state='PASS_PRELIMINARY_NATIVE_DELIVERY_COMPARISON',payload_bytes=size,capture_policy=capture,annex_verification=annex,body_validation_timing=timing,order=order,runs=results,copy_over_reference_time=results[0]['elapsed_ns']/results[1]['elapsed_ns'],warmup=warmup,repetitions=1,statistical_speedup=False,whole_stack_zero_copy=False)
+ onion=dict(state='PASS_CAPTURED_ONION_PEEL',records=total,includes_warmup=True,
+            geometry=geometry,ordered_frame_pairs_sha256=peel_digest.hexdigest(),
+            validation='OFFLINE_FULL_BYTE_COMPARISON',
+            all_native_payload_reads_excluded=False,route_cpu_cost_measured=False,hardware_offload_proven=False)
+ return dict(onion_peeling=onion,state='PASS_PRELIMINARY_NATIVE_DELIVERY_COMPARISON',payload_bytes=size,capture_policy=capture,annex_verification=annex,body_validation_timing=timing,order=order,runs=results,copy_over_reference_time=results[0]['elapsed_ns']/results[1]['elapsed_ns'],warmup=warmup,repetitions=1,statistical_speedup=False,whole_stack_zero_copy=False)
 if __name__=='__main__':
  raw=pathlib.Path(sys.argv[1]).read_bytes();r=json.loads(raw)
  try:result=verify(r)

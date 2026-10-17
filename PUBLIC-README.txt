@@ -1,6 +1,6 @@
 PRP experiments: session processing and forwarding
 
-Source edition 1.2.0; EXP-002 native assets remain pinned to release 1.0.0.
+Source edition 1.3.0; EXP-002 native assets remain pinned to release 1.0.0.
 This is a selected standalone source export, not the private repository/history.
 The release includes pinned HTTPS downloads and the approved explanatory PDF.
 
@@ -164,3 +164,31 @@ Finish any run launched by an older version or outside this frontend first;
 this lock does not discover or terminate arbitrary processes. Do not modify
 installation files concurrently. Symlinks, foreign ownership and special files
 refuse removal before deletion. A partial failure is recorded as INCOMPLETE.
+
+What EXP-002 demonstrates about ONION forwarding
+The independent reader checks the actual input/output Ethernet frames, not only
+payload delivery or a successful send. With the 1024-byte payload:
+  input PRP:   framing[0:10] | outer DIRECT[10:52] | child[52:94] | annex[94:1132]
+  output PRP:  framing[0:10] | child[10:52]                       | annex[52:1090]
+Intervals are half-open byte offsets within PRP, excluding Ethernet. One 42-byte
+DIRECT layer is removed; 1080 child/annex bytes are identical. The framing and
+forwarding alias change from ingress alias 1 to egress alias 2100. The reader
+also checks the expected source/destination MACs and separate interface bindings.
+The terminal reports this transformation; JSON preserves the geometry, count and
+ordered length-delimited frame-pair SHA256. This is an evidence consistency digest,
+not remote authentication. Counts include warmup, whereas throughput excludes it.
+
+This proves correct layer consumption on the tested NONE path. REFERENCE adds
+avoided assembly-body copying; it does not prove that the complete native path
+never reads all payload bytes. The receiver/oracle reads complete bytes after
+measurement. Ingress and carrier copying, routing/session lookups and lifetime
+management remain separate costs. No synthetic access counter is presented as a
+measurement of the kernel. Routing-only CPU cost and hardware offload are not
+measured here. Longer throughput runs alone would not close those gaps.
+
+For a future access-limited processing claim, evidence must cover the exact
+admitted parser/resolver/assembly path, including fallback and revalidation, with
+fixed routing state and explicit read/write intervals as payload size varies.
+Transport byte movement must be accounted separately. Changing instrumentation
+or product behavior is not part of this source/reader update; no protocol change
+or encrypted-suite exemption is implied.
