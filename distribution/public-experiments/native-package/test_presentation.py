@@ -24,3 +24,14 @@ class PresentationTests(unittest.TestCase):
         for text in ('16.470','15.974','69,760','1.031','No statistical speedup','disabled','POST_MEASUREMENT','fixture'):
             self.assertIn(text,out.getvalue())
         self.assertNotIn('"state"',out.getvalue())
+
+        self.assertIn('Conclusion: both modes delivered',out.getvalue())
+        self.assertIn('faster than COPY',out.getvalue())
+        result['runs'][1]['elapsed_ns']=36748000
+        with contextlib.redirect_stdout(io.StringIO()) as out:comparison(result,'fixture')
+        self.assertIn('slower than COPY',out.getvalue())
+        self.assertIn('not actual',out.getvalue())
+        result['runs'][1]['counters']['assembly_preparation_copied_bytes']=1
+        with contextlib.redirect_stdout(io.StringIO()) as out:comparison(result,'fixture')
+        self.assertIn('do not establish copy-free',out.getvalue())
+        self.assertNotIn('REFERENCE avoided',out.getvalue())

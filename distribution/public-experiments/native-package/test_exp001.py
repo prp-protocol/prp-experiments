@@ -54,12 +54,16 @@ class Exp001Tests(unittest.TestCase):
         self.assertNotIn('"classification"',out.getvalue())
         self.assertIn('not a throughput',out.getvalue())
         self.assertIn('9 lifecycle',out.getvalue())
+        self.assertIn('Conclusion: in the tested sessions',out.getvalue())
+        self.assertIn('increasing the packet count did not repeat',out.getvalue())
 
     def test_failed_summary_not_pass(self):
         with contextlib.redirect_stdout(io.StringIO()) as out:
             runner.summary({'classification':'FAIL_REPOSITORY','error':'injected'},'fixture')
         self.assertNotIn('checks passed',out.getvalue())
         self.assertIn('injected',out.getvalue())
+        self.assertIn('did not establish',out.getvalue())
+        self.assertNotIn('established the relationship once',out.getvalue())
 
     def test_inventory_path_escape_refused(self):
         with tempfile.TemporaryDirectory() as d:

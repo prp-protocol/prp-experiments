@@ -88,12 +88,20 @@ def summary(result, output):
  print('\nEXP-001 — Session setup and packet processing')
  print('Result: '+result['classification'])
  if result['classification']=='PASS':
+  print('Conclusion: in the tested sessions, PRP established the relationship once,')
+  print('then processed subsequent packets without repeating relationship policy,')
+  print('handshake or key derivation. Session establishment and packet processing')
+  print('were separate: increasing the packet count did not repeat those setup steps.')
+  print('This does not remove per-packet cryptographic work or prove constant CPU cost,')
+  print('higher throughput, or the behavior of every PRP implementation.')
   print('Packets per workload: 0, 1, 10, 1,000 and 100,000.')
   print('Receive phase: no repeated relationship policy, handshake or key derivation.')
   print('Per-packet authentication and state checks remain active.')
   print('Controls: 2 deliberate regressions detected; 9 lifecycle/adversarial checks passed.')
   print('Scope: instrumented in-process sessions; not a throughput or network benchmark.')
- else: print('Reason: '+result.get('error','See retained evidence'))
+ else:
+  print('Conclusion: this run did not establish the experiment result.')
+  print('Reason: '+result.get('error','See retained evidence'))
  print('Evidence: '+str(Path(output).resolve()))
  print('Details: result.json, measurements.json, observations.json, provenance.json and console.txt')
 

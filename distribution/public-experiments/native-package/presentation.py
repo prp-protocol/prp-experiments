@@ -15,6 +15,22 @@ def comparison(result, directory):
     print(f"COPY/REFERENCE elapsed-time ratio: {result['copy_over_reference_time']:.3f}.")
     print('Annex verification: '+('enabled' if result['annex_verification'] else 'disabled')+
           '; body validation: '+result['body_validation_timing']+'.')
+    modes={row['mode']:row for row in result['runs']}
+    copy=modes.get('COPY'); reference=modes.get('REFERENCE')
+    if (result['state']=='PASS_PRELIMINARY_NATIVE_DELIVERY_COMPARISON' and copy and reference
+            and copy['verified_payload_bytes']==reference['verified_payload_bytes']>0
+            and copy['counters']['assembly_preparation_copied_bytes']>0
+            and reference['counters']['assembly_preparation_copied_bytes']==0
+            and reference['counters']['assembly_vector_bytes']>0):
+        print('Conclusion: both modes delivered the verified payload. REFERENCE avoided')
+        print('the body copy in forwarding preparation by referencing existing byte ranges.')
+        print('This demonstrates an opportunity to offload that preparation step, not actual')
+        print('NIC offload, reduced total CPU work, or elimination of all packet copies.')
+        relation=('slower than' if reference['elapsed_ns']>copy['elapsed_ns'] else
+                  'faster than' if reference['elapsed_ns']<copy['elapsed_ns'] else 'as fast as')
+        print('In this measurement, REFERENCE was '+relation+' COPY; this alone does not establish a performance advantage.')
+    else:
+        print('Conclusion: these results do not establish copy-free forwarding preparation.')
     if not result['statistical_speedup']:print('No statistical speedup established.')
     if not result['whole_stack_zero_copy']:print('This does not establish whole-stack zero-copy or hardware offload.')
     print('Evidence: '+str(directory))

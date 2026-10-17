@@ -1,6 +1,6 @@
 {
   "schema": "prp-experiments-source-release-1",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "native_assets_version": "1.0.0",
   "independent_host_validation": "EXP002_USER_REPORTED_PRELIMINARY_PASS; EXP001_LOCAL_ISOLATED_EXPORT_PASS",
   "announced": false,
@@ -48,7 +48,7 @@
     {
       "path": "SOURCE-MANIFEST.json",
       "bytes": 27720,
-      "sha256": "9cca2ba031cbc488ae411b7d099556aa154b52fc3e3debb778bdab85516801b4"
+      "sha256": "96668611760469be13dd4747ddafa4b56cd62fc097a435b0b6f4c9f57440a01e"
     },
     {
       "path": "distribution/public-experiments/native-package/cleanup.py",
@@ -87,8 +87,8 @@
     },
     {
       "path": "distribution/public-experiments/native-package/presentation.py",
-      "bytes": 2643,
-      "sha256": "2e5138f519497fd6c2c9a92d35416f34158ebdef87244cc202a481d80c4bb108"
+      "bytes": 3935,
+      "sha256": "33613b9bfa9faf9d6768eb8a7780da3c7ec78d0666e5ca5ee1a2d2ce3cc33984"
     },
     {
       "path": "distribution/public-experiments/native-package/public_entry.py",
@@ -102,8 +102,8 @@
     },
     {
       "path": "distribution/public-experiments/native-package/test_exp001.py",
-      "bytes": 4284,
-      "sha256": "d87a8dfb4b51ecd899fe5bc7ffeb9d2762447b4e64459da3ee8e09381af10537"
+      "bytes": 4577,
+      "sha256": "de9b95f4b30c94e60b9e43aa5163f119595c8398fad20dc1a6d1bafc169ea644"
     },
     {
       "path": "distribution/public-experiments/native-package/test_full_cycle.py",
@@ -112,8 +112,8 @@
     },
     {
       "path": "distribution/public-experiments/native-package/test_presentation.py",
-      "bytes": 1722,
-      "sha256": "b7652301507e922cdde4f6d5a847f3f4236ec81c730e8b6a839fba814e6ce491"
+      "bytes": 2397,
+      "sha256": "1f95f4ce2fcdb445fa93a9ec6b80956c6543e05662c002ca6ac57b9a45ae2d9d"
     },
     {
       "path": "distribution/public-experiments/native-package/test_uninstall.py",
@@ -757,8 +757,8 @@
     },
     {
       "path": "tools/reproduce-exp-001",
-      "bytes": 19494,
-      "sha256": "9ce43421686c700761d676453d4ca2ccaf276d41534f55faa863592b92764ec2"
+      "bytes": 20076,
+      "sha256": "75cca2b264d846238eef8ac40f0dee0f8de3d40b01798a3c6879aa9d00085909"
     }
   ],
   "full_cycle_qualification": "HOST_COMPOSITION_TESTS; NO_NEW_NATIVE_CYCLE"
