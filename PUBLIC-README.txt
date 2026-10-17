@@ -1,6 +1,6 @@
 PRP experiments: session processing and forwarding
 
-Source edition 1.3.0; EXP-002 native assets remain pinned to release 1.0.0.
+Source edition 1.4.0; EXP-002 native assets remain pinned to release 1.0.0.
 This is a selected standalone source export, not the private repository/history.
 The release includes pinned HTTPS downloads and the approved explanatory PDF.
 
@@ -192,3 +192,45 @@ fixed routing state and explicit read/write intervals as payload size varies.
 Transport byte movement must be accounted separately. Changing instrumentation
 or product behavior is not part of this source/reader update; no protocol change
 or encrypted-suite exemption is implied.
+
+Access boundary: construction proof versus native execution
+After full frame validation, the reader independently constructs the same output
+as H || C || A: H is new framing, C is the preserved child, A the preserved annex.
+The included consumer projection.py reads input control intervals [0,12) and
+[44,52), constructs 10 header bytes, and holds immutable views for C and A. The
+three model segments coalesce the kernel's two framing vectors; they are not a
+claim about native descriptor count. Concatenation for comparison reads complete
+bytes in the offline oracle, outside the construction read count.
+
+This proves the selected representation can be formed without scanning the annex,
+provided route/session/security/ownership admission is independently satisfied.
+The witness does not implement those predicates, select a route, authenticate the
+annex or measure the kernel's reads. A damaged annex can still be represented;
+our independent full-wire oracle rejects it. Construction feasibility must never
+replace native admission, replay protection or full output verification.
+
+The terminal also reports four separately accounted native copy stages when all
+counters are present. For payload N on the selected profile, per forwarded record:
+                         COPY            REFERENCE
+  ingress                N+108           N+108
+  DIRECT material        84              84
+  assembly preparation   N+66            0
+  carrier accepted copy  N+66            N+66
+These counters include warmup. Their sums, 3*N+324 and 2*N+258, are repeated logical
+copy work, not distinct bytes, all CPU reads/writes, DRAM traffic or CPU savings.
+The difference is one N+66-byte assembly copy. Missing counters remain unknown;
+changed/backward counts refuse this exact-path accounting.
+
+With control shape, routing/session state and number of segments fixed, a useful
+conditional model is W_construct=O(H+Q(M)+k), versus a full-copy cost Theta(N).
+Here H denotes control work, Q(M) state lookup work, and k segment count. The
+20-byte witness covers representation framing only, not the H+Q(M) admission
+work. Locks, revocation, ownership and errors must still be handled; no constant
+routing latency or CPU offload percentage follows from this expression.
+
+A complete native access-limit result would require evidence from the real
+admitted parser/resolver/revalidation path and separate attribution of transport,
+including fallbacks. A routing-only CPU measurement would additionally need
+packet-associated, non-overlapping timing/work boundaries. Neither is inferred
+from end-to-end throughput or a synthetic replica benchmark. No new kernel
+instrumentation, module revision or runtime profile is included in this update.

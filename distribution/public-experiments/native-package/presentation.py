@@ -14,6 +14,12 @@ def comparison(result, directory):
         print(f"PRP unit: {geometry['input_prp_bytes']:,} -> {geometry['output_prp_bytes']:,} bytes; "
               f"{geometry['preserved_bytes']:,} child/annex bytes preserved exactly.")
         print('The forwarding alias/framing changes; the remaining child and annex are unchanged.')
+        witness=peel.get('descriptor_witness')
+        if witness and witness['state']=='PASS_CONDITIONAL_REPRESENTATION':
+            print('Representation proof (offline): the captured output also equals a 10-byte')
+            print('new header plus views of the preserved child/annex. Descriptor construction')
+            print('reads 20 control bytes and no annex bytes, with routing/session admission')
+            print('as an external precondition. This is NOT a native kernel access measurement.')
         print('Access-limit result: NOT ESTABLISHED for the complete native path.')
         print('Byte equality and copy counters do not show every CPU read. Current transport')
         print('may copy the body; routing-only CPU cost and device offload remain unmeasured.')
@@ -23,6 +29,20 @@ def comparison(result, directory):
     for row in result['runs']:
         c=row['counters']
         print(f"{row['mode']}: preparation copied {c['assembly_preparation_copied_bytes']:,} bytes; referenced {c['assembly_vector_bytes']:,} bytes.")
+    stages=[row.get('copy_stages',{}) for row in result['runs']]
+    if len(stages)==2 and all(s.get('state')=='PASS_SCOPED_COPY_ACCOUNTING' for s in stages):
+        print('Scoped logical copied bytes per forwarded record (including warmup):')
+        print('Mode             Ingress    DIRECT   Assembly   Carrier')
+        for row in result['runs']:
+            c=row['copy_stages']['bytes_per_record']
+            print(f"{row['mode']:<13} {c['assembly_ingress_copied_bytes']:>10,} "
+                  f"{c['assembly_direct_copied_bytes']:>9,} "
+                  f"{c['assembly_preparation_copied_bytes']:>10,} "
+                  f"{c['assembly_carrier_accepted_copy_bytes']:>9,}")
+        print('Ingress/carrier still copy whole units in this implementation. These counters')
+        print('are logical operations, not total CPU work, cache misses or DRAM traffic.')
+    else:
+        print('Complete stage-copy accounting unavailable; missing counters are not zero.')
     print(f"COPY/REFERENCE elapsed-time ratio: {result['copy_over_reference_time']:.3f}.")
     print('Annex verification: '+('enabled' if result['annex_verification'] else 'disabled')+
           '; body validation: '+result['body_validation_timing']+'.')

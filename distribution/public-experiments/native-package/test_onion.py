@@ -44,3 +44,63 @@ class OnionTests(unittest.TestCase):
         del result['onion_peeling']
         with contextlib.redirect_stdout(io.StringIO()) as out:comparison(result,'old fixture')
         self.assertNotIn('ONION result:',out.getvalue())
+
+    def test_witness_control_bound_and_native_output_equality(self):
+        for size in (256,512,1024):
+            a,b=reader.catalogue.packets(0,0,size)
+            witness=reader.descriptor_witness(a,b)
+            self.assertEqual(witness['control_read_intervals'],[[0,12],[44,52]])
+            self.assertEqual(witness['control_bytes_read'],20)
+            self.assertEqual(witness['annex_bytes_read_during_construction'],0)
+            self.assertFalse(witness['kernel_read_count'])
+            self.assertEqual(witness['routing_and_session_admission'],'EXTERNAL_PRECONDITION')
+            with self.assertRaises(ValueError):reader.descriptor_witness(a,b[:-1])
+
+    def test_witness_is_not_security_or_full_wire_acceptance(self):
+        a,b=reader.catalogue.packets(0,0)
+        a=a[:-1]+bytes([a[-1]^1]);b=b[:-1]+bytes([b[-1]^1])
+        self.assertEqual(reader.descriptor_witness(a,b)['state'],'PASS_CONDITIONAL_REPRESENTATION')
+        with self.assertRaises(ValueError):reader.onion_peel(a,b,0,1024)
+
+    def test_scoped_copy_counts_both_modes_and_sizes(self):
+        keys=('assembly_ingress_copied_bytes','assembly_direct_copied_bytes',
+              'assembly_preparation_copied_bytes','assembly_carrier_accepted_copy_bytes')
+        for size in (256,512,1024):
+            for mode in (1,2):
+                expected=(size+108,84,size+66 if mode==1 else 0,size+66)
+                pre=dict.fromkeys(keys,17)
+                post={k:17+64*v for k,v in zip(keys,expected)}
+                result=reader.copy_stages(pre,post,64,size,mode)
+                self.assertEqual(result['logical_copied_bytes_per_record'],
+                                 3*size+324 if mode==1 else 2*size+258)
+                self.assertFalse(result['all_cpu_reads_measured'])
+                post[keys[0]]+=1
+                with self.assertRaises(ValueError):reader.copy_stages(pre,post,64,size,mode)
+                post[keys[0]]=16
+                with self.assertRaises(ValueError):reader.copy_stages(pre,post,64,size,mode)
+                del post[keys[0]]
+                self.assertEqual(reader.copy_stages(pre,post,64,size,mode)['state'],'NOT_RECORDED')
+
+
+    def test_console_distinguishes_model_and_accounted_native_copies(self):
+        a,b=reader.catalogue.packets(0,0)
+        keys=('assembly_ingress_copied_bytes','assembly_direct_copied_bytes',
+              'assembly_preparation_copied_bytes','assembly_carrier_accepted_copy_bytes')
+        result=dict(state='PASS_PRELIMINARY_NATIVE_DELIVERY_COMPARISON',payload_bytes=1024,warmup=32,repetitions=1,
+            runs=[],copy_over_reference_time=1,annex_verification=0,body_validation_timing='POST_MEASUREMENT',
+            statistical_speedup=False,whole_stack_zero_copy=False,
+            onion_peeling=dict(state='PASS_CAPTURED_ONION_PEEL',records=128,geometry=reader.onion_peel(a,b,0,1024),
+                              descriptor_witness=reader.descriptor_witness(a,b)))
+        for mode in (1,2):
+            pre=dict.fromkeys(keys,0);post=dict(zip(keys,(72448,5376,69760 if mode==1 else 0,69760)))
+            result['runs'].append(dict(mode='COPY' if mode==1 else 'REFERENCE',verified_payload_bytes=32768,
+                elapsed_ns=1000000,MiB_per_s=1,copy_stages=reader.copy_stages(pre,post,64,1024,mode),
+                counters=dict(assembly_preparation_copied_bytes=post[keys[2]],assembly_vector_bytes=69760 if mode==2 else 0)))
+        with contextlib.redirect_stdout(io.StringIO()) as out:comparison(result,'fixture')
+        self.assertIn('NOT a native kernel access measurement',out.getvalue())
+        self.assertIn('Ingress/carrier still copy whole units',out.getvalue())
+        self.assertIn('external precondition',out.getvalue())
+        del result['runs'][0]['copy_stages']
+        with contextlib.redirect_stdout(io.StringIO()) as out:comparison(result,'fixture')
+        self.assertIn('missing counters are not zero',out.getvalue())
+        self.assertNotIn('Scoped logical copied bytes per',out.getvalue())

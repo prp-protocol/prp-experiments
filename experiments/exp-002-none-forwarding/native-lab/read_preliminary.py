@@ -2,6 +2,8 @@
 import base64,hashlib,json,pathlib,struct,sys,zlib
 sys.path.insert(0,str(pathlib.Path(__file__).resolve().parent.parent/'ethernet-pilot'))
 import catalogue
+sys.path.insert(0,str(pathlib.Path(__file__).resolve().parent.parent/'processing-proof'))
+from projection import project
 
 def need(ok,reason):
  if not ok:raise ValueError(reason)
@@ -50,6 +52,36 @@ def onion_peel(incoming, outgoing, index, size):
              child_input=[52,94],child_output=[10,52],
              annex_input=[94,len(incoming)],annex_output=[52,len(outgoing)],
              preserved_bytes=size+56)
+
+def descriptor_witness(incoming, outgoing):
+ # Independent representation construction only. Session/route/security admission
+ # is NOT implemented by project(), and its read count is NOT a kernel metric.
+ plan=project(incoming)
+ need(plan.control_reads==tuple(range(12))+tuple(range(44,52)), 'witness control ranges')
+ segments=plan.segments(incoming)
+ need(segments[1].obj is incoming and segments[2].obj is incoming,'witness buffer binding')
+ need(len(plan.header)==10 and len(segments)==3,'witness generated framing')
+ # Full reads occur here in the offline oracle, after descriptor construction.
+ need(b''.join(segments)==outgoing,'descriptor expression differs from captured output')
+ return dict(state='PASS_CONDITIONAL_REPRESENTATION',control_read_intervals=[[0,12],[44,52]],
+             control_bytes_read=20,annex_bytes_read_during_construction=0,
+             generated_header_bytes=10,segments=3,
+             routing_and_session_admission='EXTERNAL_PRECONDITION',
+             kernel_read_count=False,cpu_cost_measured=False)
+
+def copy_stages(pre, post, records, size, mode):
+ names=('assembly_ingress_copied_bytes','assembly_direct_copied_bytes',
+        'assembly_preparation_copied_bytes','assembly_carrier_accepted_copy_bytes')
+ missing=[k for k in names if k not in pre or k not in post]
+ if missing:return dict(state='NOT_RECORDED',missing=missing)
+ need(all(type(pre[k]) is int and type(post[k]) is int and 0<=pre[k]<=post[k] for k in names),'copy-stage counter monotonicity')
+ expected=(size+108,84,size+66 if mode==1 else 0,size+66)
+ delta={k:post[k]-pre[k] for k in names}
+ need(tuple(delta[k] for k in names)==tuple(records*x for x in expected),'selected copy-stage geometry')
+ return dict(state='PASS_SCOPED_COPY_ACCOUNTING',records_including_warmup=records,
+             deltas=delta,bytes_per_record=dict(zip(names,expected)),
+             logical_copied_bytes_per_record=sum(expected),
+             physical_memory_traffic_measured=False,all_cpu_reads_measured=False)
 
 def verify(receipt):
  need(not receipt['primary'] and not receipt['secondary'],'run/cleanup failed')
@@ -115,6 +147,7 @@ def verify(receipt):
    family_a,proto,ifindex,hatype,ptype,halen,addr=struct.unpack('<HHiHBB8s',r['address'])
    need(r['alen']==20 and family_a==17 and ifindex==ix and ptype==kind and halen==6 and addr[:6]==src,'capture endpoint')
   geometry=onion_peel(ing['body'][14:],rx['body'][14:],i,size)
+  witness=descriptor_witness(ing['body'][14:],rx['body'][14:])
   for frame in (ing['body'],rx['body']):
    peel_digest.update(struct.pack('!I',len(frame)));peel_digest.update(frame)
   need(tx['after']<=ack['before']<=ack['after']<=ing['before']<=ing['after']<=rx['before']<=rx['after'],'operation chronology')
@@ -139,10 +172,10 @@ def verify(receipt):
    actual={k:post[k]-pre[k] for k in names_annex}
    need(actual==dict(checks=0,checked_bytes=0,bypasses=per_mode,bypassed_bytes=per_mode*(size+14),forced_checks=0,mismatches=0,hash_errors=0),'effective opaque transit')
    delta.update(actual)
-  results.append(dict(mode='COPY' if mode==1 else 'REFERENCE',verified_payload_bytes=measured*size,elapsed_ns=end-begin,microseconds=(end-begin)/1000,MiB_per_s=measured*size*1e9/(end-begin)/1048576,counters=delta))
+  results.append(dict(copy_stages=copy_stages(pre,post,per_mode,size,mode),mode='COPY' if mode==1 else 'REFERENCE',verified_payload_bytes=measured*size,elapsed_ns=end-begin,microseconds=(end-begin)/1000,MiB_per_s=measured*size*1e9/(end-begin)/1048576,counters=delta))
  results.sort(key=lambda x:x['mode'])
  onion=dict(state='PASS_CAPTURED_ONION_PEEL',records=total,includes_warmup=True,
-            geometry=geometry,ordered_frame_pairs_sha256=peel_digest.hexdigest(),
+            geometry=geometry,descriptor_witness=dict(witness,verified_pairs=total),ordered_frame_pairs_sha256=peel_digest.hexdigest(),
             validation='OFFLINE_FULL_BYTE_COMPARISON',
             all_native_payload_reads_excluded=False,route_cpu_cost_measured=False,hardware_offload_proven=False)
  return dict(onion_peeling=onion,state='PASS_PRELIMINARY_NATIVE_DELIVERY_COMPARISON',payload_bytes=size,capture_policy=capture,annex_verification=annex,body_validation_timing=timing,order=order,runs=results,copy_over_reference_time=results[0]['elapsed_ns']/results[1]['elapsed_ns'],warmup=warmup,repetitions=1,statistical_speedup=False,whole_stack_zero_copy=False)
