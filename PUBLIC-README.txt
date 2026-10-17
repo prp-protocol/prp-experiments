@@ -1,10 +1,35 @@
-EXP-002: forwarding with COPY and REFERENCE
+PRP experiments: session processing and forwarding
 
-Production release 1.0.0. Independent notebook validation is pending.
+Source edition 1.1.0; EXP-002 native assets remain pinned to release 1.0.0.
 This is a selected standalone source export, not the private repository/history.
 The release includes pinned HTTPS downloads and the approved explanatory PDF.
 
-Question
+Experiments
+  ./experiment list
+
+EXP-001 asks whether packet reception repeats session-establishment work.
+It builds the exact instrumented libprp source subset bundled with the repository
+(586 kB compressed, about 3 MB expanded), using Linux, Python 3.12+, C/C++
+compilers, Make, CMake 3.22+ and nm. No Git, private checkout, VM, network,
+kernel module, download or sudo is needed. No system packages are installed.
+  ./install --experiment exp-001
+  ./experiment run exp-001 --directory "$PWD/run-exp001-001"
+  ./experiment verify "$PWD/run-exp001-001"
+
+The run performs real authenticated session establishment and encrypted packet
+processing, with native function-entry observation. Five workloads (0, 1, 10,
+1000, 100000 packets), two deliberately faulty controls and nine lifecycle checks
+must pass. Instrumentation affects cost: this is not a performance benchmark.
+The temporary library build is removed; complete evidence remains in the run.
+See experiments/exp-001-relationship-dataplane-separation/README.md for the method.
+Source notices and every file hash are in that directory's dependency package.
+
+EXP-002 retains the commands below. An explicit selector is also accepted:
+  sudo ./install --experiment exp-002
+  sudo ./experiment run exp-002 --directory "$PWD/run-exp002-001"
+Omitting the selector preserves the previous EXP-002 behavior.
+
+EXP-002 question
 Can a NONE-suite aggregator forward the selected packet body by reference rather
 than prepare another body copy? COPY and REFERENCE deliver the same useful bytes.
 The receiving endpoint validates those bytes after measurement. The comparison
@@ -49,6 +74,12 @@ schedule; late/incomplete work does not become success. Setup is not a benchmark
 The two virtual networks have no external uplink. No host PRP modules are loaded.
 
 Results and cleanup
+Console output is a short readable summary; full JSON is kept in files.
+EXP-001 saves result.json, measurements.json, observations.json, provenance.json
+and console.txt. verify checks inventory integrity and recomputes the call-count
+oracle from raw observations and symbol tables, without running the C program.
+Hashes show consistency, not authenticity against an author who rewrites all
+evidence. EXP-002 saves progress as events.jsonl and verification as JSON receipts.
 run.json reports the outer result; native/receipt.json preserves the guest and
 lifecycle evidence. verify independently checks the retained delivery result.
 clean retires only fixed inventoried disposable files after genuine termination
@@ -92,3 +123,18 @@ checks. On Ubuntu/Debian: sudo apt install genisoimage supplies the ISO tool.
 If a previous run failed, preserve its receipts and use a new run directory after
 resolving the cause. Do not rerun installation when it already succeeded; existing
 verified downloads and consumer binaries can be reused. No automatic retry occurs.
+
+Uninstall
+  sudo ./experiment uninstall
+This removes the default .exp002/installation and .exp002/downloads trees,
+including the downloaded base and cache links. It does not remove the repository,
+run directories, results, externally supplied artifacts or custom installations.
+Installation/download receipts are retained in .exp002/uninstall-<time>.json;
+this small evidence file and the lifecycle lock remain. Another run requires a
+new installation and download. clean is different: it removes only a run's
+inventoried disposable files and keeps the installation reusable.
+The updated frontend serializes install/run/uninstall with a local file lock.
+Finish any run launched by an older version or outside this frontend first;
+this lock does not discover or terminate arbitrary processes. Do not modify
+installation files concurrently. Symlinks, foreign ownership and special files
+refuse removal before deletion. A partial failure is recorded as INCOMPLETE.

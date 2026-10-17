@@ -1,4 +1,4 @@
-EXP-002 selected consumer sources
+PRP selected experiment sources
 
 Original consumer sources and documentation in this selected release are licensed
 under the accompanying MIT LICENSE, as approved by the user on 2026-10-16.
@@ -25,4 +25,11 @@ The complete kmod tree is not exported.
 Production1.0.0: separate module-sources.tar.gz and image-notices.tar.gz accompany
 the binaries. release/image-sources.json provides exact official distro-source
 references. Original license texts remain authoritative; consumer MIT does not
-relicense any distro or product material. Independent host validation is pending.
+relicense any distro or product material. EXP-002 has a user-reported independent notebook result; full qualification is not inferred.
+
+EXP-001 includes a licensed libprp build subset from immutable commit
+b0d68882b37045231325843ac23f035f4ff901a2. The exact source manifest, compressed
+archive and notices are under experiments/exp-001-relationship-dataplane-separation/
+dependency/. The archive retains first-party MIT and the six upstream libraries
+licenses/notices. It includes no private Git history, internal/reference trees or
+keys. This is an experiment dependency subset, not a new certified SDK release.

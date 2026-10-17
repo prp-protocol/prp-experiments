@@ -69,6 +69,7 @@ def commands(kind, argv):
         return ['install', '--release', a.release, '--release-sha256', a.release_sha256,
                 '--artifacts', a.artifacts, '--base', a.base, '--directory', a.directory]
     subs = parser.add_subparsers(dest='action', required=True)
+    subs.add_parser('uninstall', help='Remove default installation/downloads; preserve run evidence')
     subs.add_parser('explain', help='Explain the experiment and resources; no effects')
     run = subs.add_parser('run', help='Start a new isolated two-guest attempt')
     run.add_argument('--installation', default=str(ROOT / '.exp002/installation'))
@@ -77,6 +78,8 @@ def commands(kind, argv):
         sub = subs.add_parser(action)
         sub.add_argument('directory', help='Existing run directory')
     a = parser.parse_args(argv)
+    if a.action == 'uninstall':
+        return ['uninstall']
     if a.action == 'explain':
         return None
     if a.action == 'run':
@@ -84,10 +87,11 @@ def commands(kind, argv):
     return [a.action, a.directory]
 
 
-def main(kind, argv=None, runner=subprocess.run):
+def _main(kind, argv=None, runner=subprocess.run):
     try:
         args = commands(kind, sys.argv[1:] if argv is None else argv)
-        print(DESCRIPTION, flush=True)
+        if args is None or isinstance(args,argparse.Namespace) or args[0] in ('install','run'):
+            print(DESCRIPTION, flush=True)
         if args is None:
             print('Install compiles consumer helpers and verifies local artifacts; it starts no VM.\n'
                   'Run creates isolated networking and disposable guest identities.\n'
@@ -97,6 +101,13 @@ def main(kind, argv=None, runner=subprocess.run):
                   'Independent clean-host qualification is pending; installation and execution report actual outcomes.')
             return 0
         action = 'install' if isinstance(args, argparse.Namespace) else args[0]
+        if action == 'uninstall':
+            from uninstall import remove
+            record, count = remove(ROOT / '.exp002')
+            print(f'Installation removed: {count} files. Run directories and results preserved.')
+            print(f'Evidence: {record}')
+            print('A new installation/download is required before another run.')
+            return 0
         if action in ('install', 'run'):
             from host_tools import require
             require(action)
@@ -129,4 +140,52 @@ def main(kind, argv=None, runner=subprocess.run):
         return runner([sys.executable, str(HERE / 'native'), *args], check=False).returncode
     except Exception as error:
         print('INCOMPLETE: ' + str(error), file=sys.stderr)
+        return 1
+
+
+def main(kind, argv=None, runner=subprocess.run):
+    argv = list(sys.argv[1:] if argv is None else argv)
+    # Explicit selector leaves the existing EXP-002 command forms compatible.
+    try:
+        if kind == 'install' and ('--experiment' in argv or any(x.startswith('--experiment=') for x in argv)):
+            selector=argparse.ArgumentParser(add_help=False)
+            selector.add_argument('--experiment',choices=('exp-001','exp-002'),required=True)
+            choice,rest=selector.parse_known_args(argv)
+            if choice.experiment=='exp-001':
+                import exp001
+                return exp001.install(rest)
+            argv=rest
+        if kind == 'experiment' and argv==['list']:
+            print('EXP-001  Session setup versus packet processing. In-process; no VM or sudo.')
+            print('EXP-002  COPY versus REFERENCE forwarding. Two isolated guests; root required.')
+            print('Run: ./experiment run exp-001|exp-002 --directory NEW_DIRECTORY')
+            print('Verify: ./experiment verify RUN_DIRECTORY')
+            return 0
+        if kind == 'experiment' and len(argv)>1 and argv[0]=='run' and argv[1] in ('exp-001','exp-002'):
+            if argv[1]=='exp-001':
+                import exp001
+                return exp001.run(argv[2:],runner)
+            argv=[argv[0],*argv[2:]]
+        if kind == 'experiment' and len(argv)==2 and argv[0]=='verify' and (Path(argv[1])/'result.json').is_file():
+            import exp001
+            return exp001.verify(argv[1],runner)
+    except Exception as error:
+        print('INCOMPLETE: '+str(error),file=sys.stderr)
+        return 1
+    # Serialize default frontend installation/run/removal. No claim about older
+    # launchers or manually launched QEMU processes.
+    guarded = (kind == 'install' and '--plan' not in argv) or (kind == 'experiment' and argv and argv[0] in ('run', 'uninstall'))
+    if not guarded:
+        return _main(kind, argv, runner)
+    try:
+        prepared = commands(kind, argv)
+        action = 'install' if isinstance(prepared, argparse.Namespace) else prepared[0]
+        if action in ('install', 'run'):
+            from host_tools import require
+            require(action)
+        from uninstall import lifecycle
+        with lifecycle(ROOT / '.exp002'):
+            return _main(kind, argv, runner)
+    except Exception as error:
+        print('INCOMPLETE: installation busy or unavailable: ' + str(error), file=sys.stderr)
         return 1

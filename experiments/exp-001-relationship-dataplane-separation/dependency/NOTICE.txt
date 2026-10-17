@@ -1,0 +1,21 @@
+EXP-001 libprp build subset
+
+Exact source: b0d68882b37045231325843ac23f035f4ff901a2 (libprp 0.18.0).
+First-party copyright: 2026 GJ Labs; MIT, reproduced in debian/copyright.
+The archive retains that copyright file and all license/notice files in the six
+selected third-party trees: BLAKE3, HACL*, BearSSL, Monocypher, mlkem-native and
+mldsa-native. Their respective terms remain applicable; the experiment's MIT
+license does not replace them. No private key, binary, Git history, internal
+analysis or reference implementation is included.
+
+All 260 selected paths are admitted by the product's retained
+metadata/github-export-policy-v1.tsv. That policy and its explanatory document
+are included for provenance. The subset is selected for compiling the existing
+EXP-001 with VOPRF disabled, not for installing a full libprp SDK or running its
+entire qualification suite. Original CMake/source/header bytes are unchanged.
+
+libprp-source.json enumerates every file and its SHA-256. The public installer
+and runner verify the gzip archive and every regular member before extraction.
+The maintainer's selector is distribution/public-experiments/exp001/prepare_source.py
+in the development project; it reads immutable Git objects without editing the
+product repository. No maintainer/private checkout is required for public use.

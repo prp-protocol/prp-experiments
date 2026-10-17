@@ -1,0 +1,290 @@
+#!/usr/bin/env python3
+"""Build pinned libprp and observe its real higher-level session API."""
+import argparse
+import hashlib
+import io
+import json
+import os
+from pathlib import Path
+import platform
+import shutil
+import subprocess
+import sys
+import tarfile
+import tempfile
+
+ROOT=Path(__file__).resolve().parents[1]
+EXP=ROOT/'experiments/exp-001-relationship-dataplane-separation'
+PIN='b0d68882b37045231325843ac23f035f4ff901a2'
+FLAGS='-finstrument-functions -fno-inline'
+class InfrastructureError(RuntimeError):pass
+
+def digest(data):return hashlib.sha256(data).hexdigest()
+def save(path,value):path.write_text(json.dumps(value,indent=2)+'\n')
+def python_executable():
+ candidates=[sys.executable]
+ if not sys.executable:
+  try:candidates.append(os.readlink('/proc/self/exe'))
+  except OSError:pass
+  candidates.append(shutil.which('python3'))
+ for value in candidates:
+  if value and Path(value).is_file() and os.access(value,os.X_OK):return str(Path(value).resolve())
+ raise InfrastructureError('Cannot find the current Python executable')
+
+FORBIDDEN=['prp_app_session_v1_'+n for n in ('create','prefix','proof','peer_hs2','offer','decide','handed')]+[
+ 'prp_wire_v4_hs2_identity_verify','prp_wire_v4_traffic_keys',
+ 'prp_wire_v4_transcript_hash','prp_crypto_x25519_dh','prp_ed25519ctx_sign']
+
+def validate_observations(raw, tables):
+ if sys.flags.optimize: raise RuntimeError('Oracle requires Python without -O')
+ if (type(raw) is not list or len(raw)!=8 or [r.get('case') for r in raw]!=['normal']*5+['repeat-policy','repeat-handshake','adversarial']
+     or [r.get('packets') for r in raw[:7]]!=[0,1,10,1000,100000,10,10]):
+  raise ValueError('Incomplete workload population')
+ for row in raw[:7]:
+  if type(row['packets']) is not int or type(row.get('delivered')) is not int or row.get('observed_bound_data') is not True:
+   raise ValueError('Invalid workload types')
+ """Resolve actual native entries; check the receive-phase oracle independently."""
+ def resolve(counts):
+  result={}
+  for key,count in counts.items():
+   module,offset=key.split(':');address=int(offset,16)
+   assert address in tables[module], 'unresolved instrumented entry: '+key
+   name=tables[module][address]
+   if module=='experiment':name='example::'+name
+   result[name]=result.get(name,0)+count
+  return result
+ for row in raw:
+  if row['case']=='adversarial':
+   counts=resolve(row.pop('denied_policy_raw'))
+   assert counts.get('example::authorize',0)==1
+   assert counts.get('prp_app_session_v1_create',0)==0
+   row['denied_policy_native']=counts
+   assert len(row['checks'])==9 and len(set(row['checks']))==9 and row['classification']=='PASS'
+   continue
+  setup=resolve(row.pop('setup_raw'));packet=resolve(row.pop('packet_raw'))
+  assert setup.get('example::authorize',0)==2
+  assert setup.get('prp_app_session_v1_create',0)==2
+  assert setup.get('prp_wire_v4_hs2_identity_verify',0)>=4
+  assert setup.get('prp_wire_v4_traffic_keys',0)==2
+  count=row['packets']
+  assert row['delivered']==count and row['observed_bound_data']
+  assert packet.get('prp_app_session_v1_dispatch',0)==count
+  assert packet.get('prp_wire_v4_aop_open',0)==count
+  assert packet.get('prp_app_state_tick',0)==count
+  assert packet.get('prp_app_v1_decode',0)==count
+  violations={name:packet[name] for name in FORBIDDEN if packet.get(name)}
+  policy=packet.get('example::authorize',0)
+  if row['case']=='normal':assert not policy and not violations
+  elif row['case']=='repeat-policy':assert policy==1 and not violations
+  elif row['case']=='repeat-handshake':assert not policy and violations.get('prp_app_session_v1_create')==1
+  else:raise AssertionError('unknown workload')
+  row.update(classification='PASS' if row['case']=='normal' else 'EXPECTED_REJECTION',
+             policy_setup_calls=setup['example::authorize'],policy_packet_calls=policy,
+             setup_native=setup,packet_native=packet)
+ return raw
+
+
+def summary(result, output):
+ print('\nEXP-001 — Session setup and packet processing')
+ print('Result: '+result['classification'])
+ if result['classification']=='PASS':
+  print('Packets per workload: 0, 1, 10, 1,000 and 100,000.')
+  print('Receive phase: no repeated relationship policy, handshake or key derivation.')
+  print('Per-packet authentication and state checks remain active.')
+  print('Controls: 2 deliberate regressions detected; 9 lifecycle/adversarial checks passed.')
+  print('Scope: instrumented in-process sessions; not a throughput or network benchmark.')
+ else: print('Reason: '+result.get('error','See retained evidence'))
+ print('Evidence: '+str(Path(output).resolve()))
+ print('Details: result.json, measurements.json, observations.json, provenance.json and console.txt')
+
+def verify_evidence(directory):
+ root=Path(directory).resolve()
+ def read(name, limit=8*1024**2):
+  if Path(name).name!=name or (root/name).is_symlink(): raise ValueError('Invalid evidence path')
+  p=root/name
+  if p.stat().st_size>limit: raise ValueError('Evidence size')
+  return p.read_bytes()
+ inventory=json.loads(read('inventory.json',65536))
+ if not 0<len(inventory)<=128: raise ValueError('Evidence inventory count')
+ total=0
+ for name,pin in inventory.items():
+  body=read(name);total+=len(body)
+  if total>32*1024**2 or digest(body)!=pin: raise ValueError('Evidence integrity: '+name)
+ required={'result.json','observations.json','measurements.json','provenance.json',
+           'libprp-symbols.stdout','experiment-symbols.stdout','experiment.exit'}
+ if not required<=set(inventory):raise ValueError('Missing evidence inventory entries')
+ result=json.loads(read('result.json'))
+ if result.get('classification')!='PASS': raise ValueError('Recorded run did not pass: '+result.get('classification','unknown'))
+ provenance=json.loads(read('provenance.json'))
+ inputs=json.loads((EXP/'inputs.json').read_text())
+ if provenance['libprp_commit']!=PIN:raise ValueError('Library source pin')
+ subset=json.loads((EXP/'dependency/libprp-source.json').read_text())
+ if provenance['libprp_archive_sha256'] not in (inputs['libprp_archive_sha256'],subset['sha256']):
+  raise ValueError('Library archive pin')
+ for name,pin in inputs['sha256'].items():
+  if name.endswith('/src/experiment.c') or name.endswith('/src/observer.c'):
+   if provenance['input_hashes'].get(name)!=pin:raise ValueError('Native source changed')
+ tables={}
+ for module in ('libprp','experiment'):
+  tables[module]={int(f[0],16):f[2] for line in read(module+'-symbols.stdout').decode().splitlines()
+                  if len(f:=line.split())==3 and f[1] in ('t','T')}
+ if read('experiment.exit').strip()!=b'0':raise ValueError('Native execution failed')
+ rows=validate_observations(json.loads(read('observations.json')),tables)
+ if rows!=json.loads(read('measurements.json')):raise ValueError('Resolved observations differ')
+ if ([r.get('packets') for r in rows[:5]]!=[0,1,10,1000,100000] or len(rows)!=8
+     or [r['case'] for r in rows]!=['normal']*5+['repeat-policy','repeat-handshake','adversarial']):
+  raise ValueError('Incomplete workload population')
+ expected=dict(classification='PASS',experiment='EXP-001',model='libprp-application-session-v1',
+               packet_counts=[0,1,10,1000,100000],negative_controls=2,adversarial_checks=9,
+               synthetic_session=False,scientific_acceptance=False)
+ if result!=expected:raise ValueError('Verdict differs from observed population')
+ return result
+
+def main():
+ parser=argparse.ArgumentParser(description=__doc__)
+ parser.add_argument('--output',type=Path,default=ROOT/'working/exp-001-session-run')
+ parser.add_argument('--libprp',type=Path,help='Optional exact historical Git checkout; public default uses bundled source')
+ parser.add_argument('--source-archive',type=Path,help='Offline copy of the exact bundled source archive')
+ parser.add_argument('--summary',action='store_true',help='Short terminal summary; complete console retained in files')
+ parser.add_argument('--verify',type=Path,help='Recheck existing evidence without executing native code')
+ parser.add_argument('--cmake',default='cmake')
+ parser.add_argument('--json',action='store_true')
+ args=parser.parse_args();os.environ.setdefault('PATH',os.defpath)
+ if sys.flags.optimize: parser.error('Python -O would disable the historical oracle')
+ if args.libprp and args.source_archive: parser.error('Choose one source input')
+ if args.verify:
+  try:
+   result=verify_evidence(args.verify)
+   if args.json: print(json.dumps(result))
+   else: summary(result,args.verify)
+   return 0
+  except Exception as error:
+   print('INCOMPLETE: '+str(error),file=sys.stderr);return 1
+ output=args.output.resolve()
+ if output.exists():parser.error('choose a new output directory')
+ output.mkdir(parents=True)
+ console=[]
+ def say(message):
+  console.append(message)
+  if not args.json and not args.summary:print(message,flush=True)
+ def section(title):
+  say('\n'+'='*78+'\n'+title+'\n'+'='*78)
+  if args.summary and not args.json and title.startswith('['): print(title,flush=True)
+ def run(name,cmd,env=None,infrastructure=False):
+  cmd=list(map(str,cmd));save(output/(name+'.command.json'),cmd)
+  try:p=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=env,check=False)
+  except OSError as e:raise InfrastructureError(str(e)) from e
+  if name=='libprp-archive':
+   save(output/'libprp-archive.digest.json',dict(bytes=len(p.stdout),sha256=digest(p.stdout)))
+  else:(output/(name+'.stdout')).write_bytes(p.stdout)
+  (output/(name+'.stderr')).write_bytes(p.stderr)
+  (output/(name+'.exit')).write_text(str(p.returncode)+'\n')
+  if p.returncode:
+   kind=InfrastructureError if infrastructure else RuntimeError
+   raise kind(f'{name}: exit {p.returncode}; see {output/(name+".stderr")}')
+  return p.stdout
+ result={}
+ try:
+  section('EXP-001 | Real session establishment and packet processing in libprp')
+  say('PRP means Participant Relationship Protocol. HS2 is its two-message session handshake.\nThe experiment creates two real library endpoints, verifies signed peer identities,\nestablishes traffic keys inside libprp, and completes OPEN/ACCEPT/CONFIRM for a POST application agreement.\nThe executable example is C; Python only builds, validates observations and formats evidence.\nPacket handling receives an opaque session handle, not traffic keys or caller-built replay/session state.\nIdentity signing is external to the session handle, as the public API requires.\nPOST is the supported application label; this test does not activate or deliver to a POST application.\n')
+  section('Question and execution model')
+  say('One C process hosts two logical endpoints, A and B, with separate identities\nand session handles. Calls are serialized. Messages pass as byte buffers in memory;\nthere are no sockets or network interfaces in this experiment.\nA sends data to B in the main workload; a lifecycle check also tests B to A.\n')
+  say('The question: after setup, can authenticated packets use the installed session\nwithout repeating caller relationship policy, identity negotiation or key derivation?\nPer-packet authentication, replay checks and application-state checks remain required.\n')
+  section('[1/4] Verifying tools and pinned source...')
+  python=python_executable();cmake=shutil.which(args.cmake);cc=shutil.which('cc')
+  if not cmake or not cc or not shutil.which('nm'):raise InfrastructureError('CMake, C compiler and nm are required')
+  cmake=str(Path(cmake).resolve())
+  py=json.loads(run('python-preflight',[python,'-c','import sys,json;print(json.dumps([list(sys.version_info[:3]),sys.prefix,sys.base_prefix]))'],infrastructure=True))
+  assert py==[list(sys.version_info[:3]),sys.prefix,sys.base_prefix],'Python identity mismatch'
+  cmake_version=run('cmake-version',[cmake,'--version'],infrastructure=True).decode()
+  compiler=run('compiler-version',[cc,'--version'],infrastructure=True).decode()
+  inputs=json.loads((EXP/'inputs.json').read_text())
+  assert inputs['libprp_commit']==PIN
+  for path,expected in inputs['sha256'].items():assert digest((ROOT/path).read_bytes())==expected,'input changed: '+path
+  archive=None
+  if args.libprp:
+   archive=run('libprp-archive',['git','-C',args.libprp,'archive',PIN])
+   assert digest(archive)==inputs['libprp_archive_sha256'],'libprp archive mismatch'
+  # The temporary build consumes the verified bytes; no sibling worktree edits.
+  with tempfile.TemporaryDirectory(prefix='exp001-session-',dir=output) as tmp:
+   work=Path(tmp);source=work/'libprp'
+   if archive is not None:
+    source.mkdir()
+    with tarfile.open(fileobj=io.BytesIO(archive)) as tar:tar.extractall(source,filter='data')
+    source_hash=digest(archive);source_mode='historical-full-archive'
+   else:
+    sys.path.insert(0,str(EXP))
+    from source_bundle import extract
+    selected=extract(source,args.source_archive)
+    source_hash=selected['sha256'];source_mode='licensed-build-subset'
+    save(output/'source-selection.json',selected)
+   probe=work/'probe';probe.mkdir()
+   (probe/'CMakeLists.txt').write_text('cmake_minimum_required(VERSION 3.22)\nproject(probe C)\nadd_executable(probe main.c)\n')
+   (probe/'main.c').write_text('int main(void){return 0;}\n')
+   run('toolchain-configure',[cmake,'-S',probe,'-B',work/'probe-build','-G','Unix Makefiles'],infrastructure=True)
+   run('toolchain-build',[cmake,'--build',work/'probe-build'],infrastructure=True)
+   section('[2/4] Building libprp with native function-entry observation...')
+   build=work/'build'
+   run('configure',[cmake,'-S',source,'-B',build,'-DBUILD_SHARED_LIBS=ON','-DLIBPRP_ENABLE_VOPRF=OFF','-DCMAKE_BUILD_TYPE=Release','-DCMAKE_C_FLAGS='+FLAGS,'-G','Unix Makefiles'])
+   run('build',[cmake,'--build',build,'--target','prp','-j','2'])
+   observer=work/'observer.so'
+   run('observer-build',[cc,'-shared','-fPIC','-O2','-Wall','-Wextra','-Werror',EXP/'src/observer.c','-o',observer])
+   library=build/'libprp.so'
+   executable=work/'experiment'
+   run('experiment-build',[cc,'-std=c11','-O2','-Wall','-Wextra','-Werror',*FLAGS.split(),
+       '-fPIE','-pie','-I'+str(source/'include'),EXP/'src/experiment.c',
+       '-L'+str(build),'-lprp',observer,'-ldl','-Wl,-rpath,'+str(build),'-o',executable])
+   tables={}
+   for module,binary in [('libprp',library),('experiment',executable)]:
+    symbols=run(module+'-symbols',['nm','-an',binary]).decode()
+    tables[module]={int(fields[0],16):fields[2] for line in symbols.splitlines()
+                    if len(fields:=line.split())==3 and fields[1] in ('t','T')}
+
+   save(output/'provenance.json',dict(libprp_commit=PIN,libprp_archive_sha256=source_hash,source_mode=source_mode,library_sha256=digest(library.read_bytes()),observer_sha256=digest(observer.read_bytes()),executable_sha256=digest(executable.read_bytes()),example_language='C11',input_hashes=inputs['sha256'],compiler=compiler,cmake=cmake_version,platform=platform.platform(),python=sys.version,flags=FLAGS,identity_suite='Ed25519ctx/SHA-256 (0x0002)',session_suite='X25519 + ML-KEM-1024 + ChaCha20-Poly1305 + BLAKE3 (0x0202)',entropy='Linux getrandom; fresh identity seeds and handshake entropy; secrets not saved',clock='caller-supplied monotonic logical milliseconds, 10 ms/packet; not elapsed-time measurement'))
+   (output/'compiler-flags.txt').write_bytes((build/'CMakeFiles/prp.dir/flags.make').read_bytes())
+   section('[3/4] Running actual sessions and instrumented packet workloads...')
+   env={**os.environ,'LD_PRELOAD':str(observer)}
+   raw=run('experiment',[executable,output/'observations.json'],env=env)
+   say(raw.decode().rstrip())
+   rows=validate_observations(json.loads((output/'observations.json').read_text()),tables)
+   save(output/'measurements.json',rows)
+   say('PASS native receive-phase oracle for all five workloads; both deliberate regressions detected.')
+   section('Measured function calls | setup and packet reception')
+   say('Packets | Policy setup | Policy during receive | Native dispatch | Native packet open | HS2/key derivation during receive')
+   for row in rows[:5]:
+    counts=row['packet_native']
+    say(f"{row['packets']:7} | {row['policy_setup_calls']:12} | {row['policy_packet_calls']:21} | {counts.get('prp_app_session_v1_dispatch',0):15} | {counts.get('prp_wire_v4_aop_open',0):18} | 0")
+   say('\nNative application-state maintenance and admission decoding still occur once per received packet.\nZero repeated handshake work does not mean zero state checks or zero payload reads.\n')
+   section('Adversarial and lifecycle checks')
+   say('\n'.join('  PASS '+item for item in rows[-1]['checks']))
+   # Show exact caller code, separate from setup and library implementation.
+   code=(EXP/'src/experiment.c').read_text()
+   def excerpt_for(section):
+    return code.split('/* BEGIN '+section+' API EXAMPLE */\n',1)[1].split('/* END '+section+' API EXAMPLE */',1)[0].rstrip()
+   section('Actual C caller source | setup, sender and receiver')
+   say('The following excerpts come directly from the hash-verified C source compiled\nfor this run. Helpers and assertions belong to the experiment; prp_* calls enter\nlibprp. CHECK stops execution if an expected result is not observed.\nCAP is the dispatch output capacity (65649 bytes); ALIAS is the fixture application\nidentifier (733). Timestamps are logical milliseconds. Excerpts appear in execution\norder; the complete source also contains instrumentation and adversarial cases.')
+   for name,title,filename in [
+       ('SESSION','SESSION SETUP: identities, handles and handshake','session-api.txt'),
+       ('AGREEMENT','APPLICATION AGREEMENT: OPEN, ACCEPT and CONFIRM','agreement-api.txt'),
+       ('SENDER','SENDER A: prepare and protect a data item','sender-api.txt'),
+       ('PACKET','RECEIVER B: dispatch and verify the returned event','packet-api.txt')]:
+    excerpt=excerpt_for(name)
+    (output/filename).write_text(excerpt+'\n')
+    say('\n'+'-'*78+'\nBEGIN C SOURCE | '+title+'\n'+'-'*78)
+    say(excerpt)
+    say('-'*78+'\nEND C SOURCE | '+title+'\n'+'-'*78)
+  section('[4/4] Verdict and scope')
+  say('PASS: this pinned high-level session implementation accepts authenticated bound data without repeating the observed setup operations.\nScope: serialized in-process endpoints and in-memory message exchange; no kernel, physical network, application durable commit, performance or full-protocol-conformance claim.\nNative instrumentation covers the C example and compiled libprp functions, not the internals of external cryptographic libraries.\nThe two deliberate control-work regressions were detected. Entropy and ciphertext vary between runs; compare outcomes and call counts, not ciphertext hashes.')
+  result=dict(classification='PASS',experiment='EXP-001',model='libprp-application-session-v1',packet_counts=[r['packets'] for r in rows[:5]],negative_controls=2,adversarial_checks=len(rows[-1]['checks']),synthetic_session=False,scientific_acceptance=False)
+ except Exception as e:
+  result=dict(classification='BLOCKED_INFRASTRUCTURE' if isinstance(e,InfrastructureError) else 'FAIL_REPOSITORY',error=str(e))
+  say(result['classification']+': '+str(e))
+ save(output/'result.json',result)
+ section('Evidence files')
+ say('Evidence: '+str(output))
+ (output/'console.txt').write_text('\n'.join(console)+'\n')
+ save(output/'inventory.json',{p.name:digest(p.read_bytes()) for p in sorted(output.iterdir()) if p.is_file() and p.name!='inventory.json'})
+ if args.json:print(json.dumps(result))
+ elif args.summary:summary(result,output)
+ return {'PASS':0,'FAIL_REPOSITORY':1,'BLOCKED_INFRASTRUCTURE':2}[result['classification']]
+if __name__=='__main__':sys.exit(main())
