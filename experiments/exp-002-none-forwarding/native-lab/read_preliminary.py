@@ -69,7 +69,7 @@ def descriptor_witness(incoming, outgoing):
              routing_and_session_admission='EXTERNAL_PRECONDITION',
              kernel_read_count=False,cpu_cost_measured=False)
 
-def copy_stages(pre, post, records, size, mode):
+def copy_stages(pre, post, records, size, mode, reference_profile=False):
  names=('assembly_ingress_copied_bytes','assembly_direct_copied_bytes',
         'assembly_preparation_copied_bytes','assembly_carrier_accepted_copy_bytes')
  missing=[k for k in names if k not in pre or k not in post]
@@ -77,35 +77,48 @@ def copy_stages(pre, post, records, size, mode):
  need(all(type(pre[k]) is int and type(post[k]) is int and 0<=pre[k]<=post[k] for k in names),'copy-stage counter monotonicity')
  expected=(size+108,84,size+66 if mode==1 else 0,size+66)
  delta={k:post[k]-pre[k] for k in names}
+ if reference_profile and mode==2:
+  need(all(delta[k]<=records*x for k,x in zip(names,(size+108,84,0,size+66))),'reference copy-stage bound')
+  return dict(state='PASS_SCOPED_REFERENCE_ACCOUNTING' if not any(delta.values()) else 'COPY_FALLBACK_OBSERVED',records_including_warmup=records,deltas=delta,physical_memory_traffic_measured=False,all_cpu_reads_measured=False)
  need(tuple(delta[k] for k in names)==tuple(records*x for x in expected),'selected copy-stage geometry')
  return dict(state='PASS_SCOPED_COPY_ACCOUNTING',records_including_warmup=records,
              deltas=delta,bytes_per_record=dict(zip(names,expected)),
              logical_copied_bytes_per_record=sum(expected),
              physical_memory_traffic_measured=False,all_cpu_reads_measured=False)
 
-def verify(receipt):
+def verify(receipt, reference_profile=False, permanent=False):
+ need(not (reference_profile and permanent),'exclusive reference profile')
  need(not receipt['primary'] and not receipt['secondary'],'run/cleanup failed')
  g=receipt['guests'];need(set(g)=={'endpoint','dut'},'two guests')
  for role,v in g.items():
   need(v['reaped'] and v['terminal'][3]==0,'QEMU unsettled')
   need(v['observation']['nonce']==v['nonce'],'boot nonce')
   smoke=v['observation']['module_smoke'];need(smoke['state']=='PASS_MODULE_LOAD_READBACK_ONLY' and not smoke['remaining_owned'],'guest cleanup')
+ from module_smoke import reference_readback,REFERENCE_PROFILE,PERMANENT_PROFILE,permanent_binding,permanent_readback
+ for role,v in g.items():
+  smoke=v['observation']['module_smoke']
+  need('setup_diagnostic' not in smoke,'setup diagnostic is not data qualification')
+  selected_profile=smoke.get('reference_profile')
+  if permanent:
+   permanent_binding(smoke['socket_probe_pin'],smoke['pins']);permanent_readback(smoke['parameters'])
+  need(selected_profile==(PERMANENT_PROFILE if permanent else REFERENCE_PROFILE if reference_profile and role=='dut' else None),'explicit reference profile selection')
+  if reference_profile:reference_readback(smoke['parameters'],role=='dut')
  endpoint=g['endpoint']['observation']['module_smoke']['socket_probe'];dut=g['dut']['observation']['module_smoke']['socket_probe']
  selected={}
  for role,probe in [('endpoint',endpoint),('dut',dut)]:
   rows=find(probe,'preliminary');need(len(rows)==1,'one selected data result');selected[role]=rows[0]
   need(not rows[0]['primary'] and not rows[0]['final_error'] ,'data failure/count')
   need((rows[0].get('warmup_records',0),rows[0]['records_per_mode']) in ((0,2),(32,32)),'fixed profile')
-  schema=rows[0]['schema'];need(schema in ('EXP002-SHORT-DATA-1','EXP002-SHORT-DATA-2'),'schema')
+  schema=rows[0]['schema'];need(schema in (('EXP002-REFERENCE-DATA-1',) if permanent else ('EXP002-SHORT-DATA-1','EXP002-SHORT-DATA-2')),'schema')
   order=[1,2] if schema=='EXP002-SHORT-DATA-1' else rows[0]['order']
-  need(order in ([1,2],[2,1]) and all(type(x) is int for x in order),'declared mode order')
+  need(order in (([2],) if permanent else ([1,2],[2,1])) and all(type(x) is int for x in order),'declared mode order')
   need([x['mode'] for x in rows[0]['runs']]==order,'mode order')
   need(all(not x['primary'] for x in rows[0]['runs']),'phase failure')
   need(not probe['primary'] and not probe['cleanup_error'],'socket cleanup')
  e,d=selected['endpoint'],selected['dut']
  size=e['payload_bytes'];need(type(size) is int and size in (256,512,1024) and d['payload_bytes']==size,'payload geometry binding')
  if size!=1024:need(e.get('warmup_records')==32 and e.get('requested_annex_verification')==0 and e.get('capture_policy')=='PRP_ETHERTYPE_LOCKED_V1','diagnostic size profile')
- need(e['runs'][0]['last_receive_ns']<e['runs'][1]['begin_ns'],'phase chronology')
+ if not permanent:need(e['runs'][0]['last_receive_ns']<e['runs'][1]['begin_ns'],'phase chronology')
  order=[x['mode'] for x in e['runs']]
  need([x['mode'] for x in d['runs']]==order,'cross-guest mode order')
  annex=e.get('requested_annex_verification',1)
@@ -116,7 +129,7 @@ def verify(receipt):
  capture=e.get('capture_policy','ALL_ETHERNET')
  need(capture in ('ALL_ETHERNET','PRP_ETHERTYPE_LOCKED_V1') and d.get('capture_policy','ALL_ETHERNET')==capture,'capture selection')
  need((e.get('warmup_records',0),e['records_per_mode'])==(d.get('warmup_records',0),d['records_per_mode']),'cross-guest profile')
- warmup=e.get('warmup_records',0);measured=e['records_per_mode'];per_mode=warmup+measured;total=2*per_mode
+ warmup=e.get('warmup_records',0);measured=e['records_per_mode'];per_mode=warmup+measured;total=len(order)*per_mode
  raw=raw_rows(e);need(len(raw)==total*4,'complete custody')
  mac=lambda s:bytes.fromhex(s.replace(':',''))
  local=[mac(x) for x in g['endpoint']['macs']];remote=[mac(x) for x in g['dut']['macs']]
@@ -172,13 +185,28 @@ def verify(receipt):
    actual={k:post[k]-pre[k] for k in names_annex}
    need(actual==dict(checks=0,checked_bytes=0,bypasses=per_mode,bypassed_bytes=per_mode*(size+14),forced_checks=0,mismatches=0,hash_errors=0),'effective opaque transit')
    delta.update(actual)
-  results.append(dict(copy_stages=copy_stages(pre,post,per_mode,size,mode),mode='COPY' if mode==1 else 'REFERENCE',verified_payload_bytes=measured*size,elapsed_ns=end-begin,microseconds=(end-begin)/1000,MiB_per_s=measured*size*1e9/(end-begin)/1048576,counters=delta))
+  if permanent:
+   need(warmup==32 and measured==32 and annex==0 and capture=='PRP_ETHERTYPE_LOCKED_V1','permanent experiment profile')
+   keys=('assembly_admitted_records','assembly_units','assembly_retains','assembly_releases','assembly_fallbacks','assembly_pending_records')
+   need(all(k in pre and k in post and post[k]>=pre[k] for k in keys),'permanent lifecycle counters')
+   need(post['assembly_admitted_records']-pre['assembly_admitted_records']==per_mode and post['assembly_units']-pre['assembly_units']==per_mode,'permanent unit count')
+   need(post['assembly_retains']-pre['assembly_retains']==post['assembly_releases']-pre['assembly_releases']>0,'logical reference balance')
+   need(post['assembly_fallbacks']==pre['assembly_fallbacks'] and pre['assembly_pending_records']==post['assembly_pending_records']==0,'no fallback/pending')
+   need(copy_stages(pre,post,per_mode,size,mode,True)['state']=='PASS_SCOPED_REFERENCE_ACCOUNTING','mandatory zero counted copies')
+  results.append(dict(copy_stages=copy_stages(pre,post,per_mode,size,mode,reference_profile or permanent),mode='COPY' if mode==1 else 'REFERENCE',verified_payload_bytes=measured*size,elapsed_ns=end-begin,microseconds=(end-begin)/1000,MiB_per_s=measured*size*1e9/(end-begin)/1048576,counters=delta))
  results.sort(key=lambda x:x['mode'])
  onion=dict(state='PASS_CAPTURED_ONION_PEEL',records=total,includes_warmup=True,
             geometry=geometry,descriptor_witness=dict(witness,verified_pairs=total),ordered_frame_pairs_sha256=peel_digest.hexdigest(),
             validation='OFFLINE_FULL_BYTE_COMPARISON',
             all_native_payload_reads_excluded=False,route_cpu_cost_measured=False,hardware_offload_proven=False)
- return dict(onion_peeling=onion,state='PASS_PRELIMINARY_NATIVE_DELIVERY_COMPARISON',payload_bytes=size,capture_policy=capture,annex_verification=annex,body_validation_timing=timing,order=order,runs=results,copy_over_reference_time=results[0]['elapsed_ns']/results[1]['elapsed_ns'],warmup=warmup,repetitions=1,statistical_speedup=False,whole_stack_zero_copy=False)
+ state='PASS_PRELIMINARY_NATIVE_DELIVERY_COMPARISON'
+ if reference_profile:
+  accounting=results[1]['copy_stages']['state']
+  need(accounting!='NOT_RECORDED','reference qualification requires copy counters')
+  state='PASS_SCOPED_RX_TX_REFERENCES' if accounting=='PASS_SCOPED_REFERENCE_ACCOUNTING' else 'COPY_FALLBACK_OBSERVED'
+ if permanent:
+  return dict(state='PASS_NATIVE_REFERENCE_FORWARDING',profile=PERMANENT_PROFILE,onion_peeling=onion,payload_bytes=size,capture_policy=capture,annex_verification=annex,body_validation_timing=timing,order=order,runs=results,warmup=warmup,repetitions=1,statistical_speedup=False,whole_stack_zero_copy=False)
+ return dict(onion_peeling=onion,state=state,payload_bytes=size,capture_policy=capture,annex_verification=annex,body_validation_timing=timing,order=order,runs=results,copy_over_reference_time=results[0]['elapsed_ns']/results[1]['elapsed_ns'],warmup=warmup,repetitions=1,statistical_speedup=False,whole_stack_zero_copy=False)
 if __name__=='__main__':
  raw=pathlib.Path(sys.argv[1]).read_bytes();r=json.loads(raw)
  try:result=verify(r)

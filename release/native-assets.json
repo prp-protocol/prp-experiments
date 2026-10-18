@@ -1,7 +1,7 @@
 {
   "schema": "exp002-native-assets-1",
   "kernel": "5.14.0-687.39.1.el9_8.x86_64",
-  "source_commit": "beb5f9d118022846b3048a1e98d5dea52988ce67",
+  "source_commit": "843b3997815f9d79876dacfde7c441f4eb848bb6",
   "image": {
     "sha256": "cd6382d1c2bbfa085995fae0d8529acbc268d22e05e877258ede4e59b84695ea",
     "bytes": 1658191872,
@@ -25,13 +25,13 @@
     },
     "prp_adjacencies": {
       "file": "prp_adjacencies.ko",
-      "bytes": 11330752,
-      "sha256": "ca12961d790e37adcd8be39ec6f6e1221ce7f4c56095aa27db8dcfacb0249c89"
+      "sha256": "9e476cc8d8417b71bb83758b826a0b3e4ea6581edeece6f7ac329d2961a6a70d",
+      "bytes": 11389960
     },
     "prp_carrier_ethernet": {
       "file": "prp_carrier_ethernet.ko",
-      "bytes": 922584,
-      "sha256": "b96e3b1bd2133703d52564f6bdba79f31c82236c41923a86774ffdf487f8d6a4"
+      "sha256": "716c55d83187464c91412a0efa60d3c63f59776ca2571e26016694f8d1d16c27",
+      "bytes": 922136
     }
   }
 }

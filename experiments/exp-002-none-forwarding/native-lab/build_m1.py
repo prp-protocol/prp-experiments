@@ -9,12 +9,15 @@ if '--payload-bytes' in args:
  if at+1>=len(args):raise SystemExit('Missing payload size')
  payload=int(args[at+1]);del args[at:at+2]
  if payload not in (256,512,1024):raise SystemExit('Unsupported diagnostic payload size')
+reference_only='--reference-only' in args
+if reference_only:args.remove('--reference-only');cmd[1:1]=['-DPD_REFERENCE_ONLY']
 filtered='--prp-capture' in args
 if filtered:args.remove('--prp-capture')
 opaque='--opaque-transit' in args
 if opaque:args.remove('--opaque-transit')
 warmed='--warmed' in args
 if warmed:args.remove('--warmed')
+if reference_only and (args!=['--preliminary'] or not (warmed and opaque and filtered)):raise SystemExit('Reference-only requires warmed opaque preliminary profile')
 if args not in ([],['--preliminary'],['--preliminary-reverse']):raise SystemExit('Unknown build profile')
 if args in (['--preliminary'],['--preliminary-reverse']):
  extra=[h/'preliminary_data.c']+[e/x for x in ('member_catalogue.c','member_prepare.c','wire_adapter.c','socket_backend.c','payload_ledger.c')]
@@ -22,6 +25,7 @@ if args in (['--preliminary'],['--preliminary-reverse']):
  src+=extra;cmd[1:1]=['-DPRELIMINARY_DATA','-DPILOT_FLOW'];cmd[cmd.index('-lcrypto'):cmd.index('-lcrypto')]=list(map(str,extra))
 if payload!=1024 and not (opaque and warmed and filtered and args):raise SystemExit('Size sweep requires opaque warmed filtered preliminary profile')
 cmd[1:1]=['-DEP_EXPERIMENT_PAYLOAD='+str(payload)]
+src.append(h/'preliminary_profile.h') # compile-time phase/record selection
 src.append(e/'payload_geometry.h') # provenance only; not a separate compiler input
 if opaque:
  if not warmed or not filtered:raise SystemExit('Opaque transit requires warmed filtered profile')

@@ -8,10 +8,10 @@ import sys
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
-DESCRIPTION = '''EXP-002 compares COPY and REFERENCE forwarding with the NONE suite.
-COPY prepares a copied output body; REFERENCE reuses the selected body ranges.
-The receiver checks useful bytes after measurement. This tests the opportunity
-for offloading; it does not demonstrate NIC hardware acceleration or promise speedup.
+DESCRIPTION = '''EXP-002 tests NONE-suite onion forwarding by retained references.
+One DIRECT layer is removed; the child and annex bytes are preserved.
+Four instrumented PRP copy counts must be zero. Full bytes are checked after
+measurement. This does not prove NIC offload, all CPU reads or relative speedup.
 Two isolated guests use one read-only base and two disposable thin overlays.
 Each guest needs 2 GiB RAM and one vCPU, plus host overhead. Each overlay can grow
 to 10 GiB. Runtime is bounded by the existing 600-second attempt schedule.
@@ -137,6 +137,13 @@ def _main(kind, argv=None, runner=subprocess.run):
                 destination.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
             print('Installation verifies and compiles only; run is a separate command.' if args[0] == 'install'
                   else 'Starting a fresh local attempt; receipts will distinguish incomplete delivery.', flush=True)
+        if args[0] == 'run':
+            print('Waiting for both guests to boot and report their kernels may take 2–3 minutes,\n'
+                  'depending on the host. A quiet console during this stage is expected.\n'
+                  'Guest observation times include startup; they are not packet-forwarding measurements.',
+                  flush=True)
+        if args[0] in ('install','run','verify'):
+            args = [args[0], '--permanent-references', *args[1:]]
         return runner([sys.executable, str(HERE / 'native'), *args], check=False).returncode
     except Exception as error:
         print('INCOMPLETE: ' + str(error), file=sys.stderr)
@@ -157,7 +164,7 @@ def main(kind, argv=None, runner=subprocess.run):
             argv=rest
         if kind == 'experiment' and argv==['list']:
             print('EXP-001  Session setup versus packet processing. In-process; no VM or sudo.')
-            print('EXP-002  COPY versus REFERENCE forwarding. Two isolated guests; root required.')
+            print('EXP-002  Onion forwarding by retained references. Two isolated guests; root required.')
             print('Run: ./experiment run exp-001|exp-002 --directory NEW_DIRECTORY')
             print('Verify: ./experiment verify RUN_DIRECTORY')
             return 0

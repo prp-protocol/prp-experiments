@@ -7,11 +7,14 @@ def decode_line(line):
  return json.loads(line.split(marker,1)[1])
 
 class Relay:
- def __init__(self,nonces,setup=False):
+ def __init__(self,nonces,setup=False,phases=2):
+  if type(phases) is not int or phases not in (1,2):raise ValueError('phase count')
+  self.phases=phases
   if set(nonces)!={'endpoint','dut'}:raise ValueError('roles')
   self.nonces=dict(nonces);self.setup=setup;self.mode=3 if setup else 1;self.ready=set();self.done=set();self.rows=[]
  def accept(self,role,row):
   if set(row)!={'nonce','role','mode','event'} or row['nonce']!=self.nonces[role] or row['role']!=role or type(row['mode']) is not int or row['mode']!=self.mode:raise ValueError('Foreign/stale barrier')
+  if not self.setup and self.mode>self.phases:raise ValueError('Barrier already complete')
   event=row['event'];self.rows.append(dict(row))
   if self.setup:
    if event!='READY' or role in self.ready:raise ValueError('Setup barrier order')

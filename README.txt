@@ -1,14 +1,67 @@
-EXP-002: forwarding with COPY and REFERENCE
+PRP experiments: session processing and forwarding
 
-Production release 1.0.0. Independent notebook validation is pending.
+Production edition 1.5.0: EXP-001 and permanent-reference EXP-002.
 This is a selected standalone source export, not the private repository/history.
-The release includes pinned HTTPS downloads and the approved explanatory PDF.
+Read PRP-EXPERIMENTS.pdf for the illustrated three-page explanation of both tests.
+The installer selects exact public artifact URLs and hashes in release/.
 
-Question
+One-command complete cycle
+After cloning/updating this repository, with the documented host packages installed:
+  sudo ./run
+
+No parameters are required. This command checks prerequisites, runs and verifies
+EXP-001, downloads/verifies and prepares EXP-002, runs and verifies EXP-002, then
+cleans and removes the new cycle's entire temporary directory. Results are shown
+as readable terminal summaries. On full success, no new installation, downloaded
+base, overlay or evidence file remains. A later cycle downloads the base again.
+The temporary directory is .prp-cycle-<unique-id> beside the commands, with
+private permissions. Existing .exp002 installations and earlier runs are untouched;
+use sudo ./experiment uninstall separately if an old installation is no longer needed.
+
+On failure, interruption, uncertain guest termination or cleanup failure, the
+command returns nonzero and preserves remaining files with their exact location.
+A partial deletion cannot restore already removed files. There are no automatic
+retries, host package installs or implicit privilege elevation. Finish runs made
+by older/manual launchers first. Concurrent ./run cycles in this checkout refuse.
+The existing EXP-002 600-second attempt limit and separate 1800-second download
+limit are unchanged; these are not a single wall-clock bound for both experiments.
+The base download is about 1.67 GB and two guests need 4 GiB RAM plus host overhead.
+
+Use the separate commands below when you want to retain evidence or reuse the
+installation instead of downloading it again. Full-cycle deletion is ordinary
+file removal, not secure erasure or proof against a hostile concurrent writer.
+
+Experiments
+  ./experiment list
+
+EXP-001 asks whether packet reception repeats session-establishment work.
+It builds the exact instrumented libprp source subset bundled with the repository
+(586 kB compressed, about 3 MB expanded), using Linux, Python 3.12+, C/C++
+compilers, Make, CMake 3.22+ and nm. No Git, private checkout, VM, network,
+kernel module, download or sudo is needed. No system packages are installed.
+  ./install --experiment exp-001
+  ./experiment run exp-001 --directory "$PWD/run-exp001-001"
+  ./experiment verify "$PWD/run-exp001-001"
+
+The run performs real authenticated session establishment and encrypted packet
+processing, with native function-entry observation. Five workloads (0, 1, 10,
+1000, 100000 packets), two deliberately faulty controls and nine lifecycle checks
+must pass. Instrumentation affects cost: this is not a performance benchmark.
+The temporary library build is removed; complete evidence remains in the run.
+See experiments/exp-001-relationship-dataplane-separation/README.md for the method.
+Source notices and every file hash are in that directory's dependency package.
+
+EXP-002 retains the commands below. An explicit selector is also accepted:
+  sudo ./install --experiment exp-002
+  sudo ./experiment run exp-002 --directory "$PWD/run-exp002-001"
+Omitting the selector selects EXP-002.
+
+EXP-002 question
 Can a NONE-suite aggregator forward the selected packet body by reference rather
-than prepare another body copy? COPY and REFERENCE deliver the same useful bytes.
-The receiving endpoint validates those bytes after measurement. The comparison
-reports elapsed time and copy/reference counters; a speedup is not a requirement.
+than copy the retained body? This edition runs one REFERENCE phase, with no COPY
+treatment: 32 warmup and 32 measured packets, each carrying 1024 useful bytes.
+The receiving endpoint validates full frames after measurement. All four
+instrumented PRP copy counts must be zero; elapsed time is descriptive only.
 This is a software demonstration of an offload opportunity, not a NIC accelerator
 measurement. Timed forwarding does not validate the annex; the post-run oracle
 checks the received body. Encrypted suites are outside this reproduction.
@@ -42,13 +95,19 @@ A failed/existing installation or run directory is never overwritten or retried.
 effects; --plan is not a required installation step.
 
 Each run creates fresh disposable lab identities and two thin overlays over one
-read-only base. The candidate compressed base is 1658191872 bytes; its virtual
+read-only base. The compressed base is 1658191872 bytes; its virtual
 size is 10 GiB. Each overlay may grow toward 10 GiB. Each guest uses 2 GiB RAM and
 one vCPU, plus host overhead. The runtime attempt has the existing 600-second
 schedule; late/incomplete work does not become success. Setup is not a benchmark.
 The two virtual networks have no external uplink. No host PRP modules are loaded.
 
 Results and cleanup
+Console output is a short readable summary; full JSON is kept in files.
+EXP-001 saves result.json, measurements.json, observations.json, provenance.json
+and console.txt. verify checks inventory integrity and recomputes the call-count
+oracle from raw observations and symbol tables, without running the C program.
+Hashes show consistency, not authenticity against an author who rewrites all
+evidence. EXP-002 saves progress as events.jsonl and verification as JSON receipts.
 run.json reports the outer result; native/receipt.json preserves the guest and
 lifecycle evidence. verify independently checks the retained delivery result.
 clean retires only fixed inventoried disposable files after genuine termination
@@ -70,8 +129,11 @@ Checksums establish consistency with the selected release, not an independent
 signature identity. Obtain the release checksum through the maintainer's trusted
 channel. Do not substitute artifacts with a similar name or newer version.
 
-The immutable release URL is:
-https://download.prp-protocol.org/exp002/releases/1.0.0/
+Updated core/Ethernet modules and corresponding source material are served from
+https://download.prp-protocol.org/exp002/releases/1.5.0/. Unchanged image, crypto
+modules and image notices retain their exact 1.0.0 URLs and hashes. Do not mix
+new source with an older manual installation: use ./run for a fresh cycle, or
+uninstall the old default installation before installing this edition.
 The GitHub export contains only the allowlisted source and release documents.
 
 Checkout line endings
@@ -92,3 +154,87 @@ checks. On Ubuntu/Debian: sudo apt install genisoimage supplies the ISO tool.
 If a previous run failed, preserve its receipts and use a new run directory after
 resolving the cause. Do not rerun installation when it already succeeded; existing
 verified downloads and consumer binaries can be reused. No automatic retry occurs.
+
+Uninstall
+  sudo ./experiment uninstall
+This removes the default .exp002/installation and .exp002/downloads trees,
+including the downloaded base and cache links. It does not remove the repository,
+run directories, results, externally supplied artifacts or custom installations.
+Installation/download receipts are retained in .exp002/uninstall-<time>.json;
+this small evidence file and the lifecycle lock remain. Another run requires a
+new installation and download. clean is different: it removes only a run's
+inventoried disposable files and keeps the installation reusable.
+The updated frontend serializes install/run/uninstall with a local file lock.
+Finish any run launched by an older version or outside this frontend first;
+this lock does not discover or terminate arbitrary processes. Do not modify
+installation files concurrently. Symlinks, foreign ownership and special files
+refuse removal before deletion. A partial failure is recorded as INCOMPLETE.
+
+What EXP-002 demonstrates about ONION forwarding
+The independent reader checks the actual input/output Ethernet frames, not only
+payload delivery or a successful send. With the 1024-byte payload:
+  input PRP:   framing[0:10] | outer DIRECT[10:52] | child[52:94] | annex[94:1132]
+  output PRP:  framing[0:10] | child[10:52]                       | annex[52:1090]
+Intervals are half-open byte offsets within PRP, excluding Ethernet. One 42-byte
+DIRECT layer is removed; 1080 child/annex bytes are identical. The framing and
+forwarding alias change from ingress alias 1 to egress alias 2100. The reader
+also checks the expected source/destination MACs and separate interface bindings.
+The terminal reports this transformation; JSON preserves the geometry, count and
+ordered length-delimited frame-pair SHA256. This is an evidence consistency digest,
+not remote authentication. Counts include warmup, whereas throughput excludes it.
+
+This proves correct layer consumption on the tested NONE path. Ingress, DIRECT,
+assembly preparation and carrier accepted-copy counters must all remain zero.
+This does not prove that the complete native path never reads all payload bytes.
+The receiver/oracle reads complete bytes after measurement. Small new framing,
+metadata cloning, routing/session lookups and lifetime management remain costs.
+Routing-only CPU cost and hardware offload are not measured here.
+
+For a future access-limited processing claim, evidence must cover the exact
+admitted parser/resolver/assembly path, including fallback and revalidation, with
+fixed routing state and explicit read/write intervals as payload size varies.
+Transport byte movement must be accounted separately. Changing instrumentation
+or product behavior is not part of this source/reader update; no protocol change
+or encrypted-suite exemption is implied.
+
+Access boundary: construction proof versus native execution
+After full frame validation, the reader independently constructs the same output
+as H || C || A: H is new framing, C is the preserved child, A the preserved annex.
+The included consumer projection.py reads input control intervals [0,12) and
+[44,52), constructs 10 header bytes, and holds immutable views for C and A. The
+three model segments coalesce the kernel's two framing vectors; they are not a
+claim about native descriptor count. Concatenation for comparison reads complete
+bytes in the offline oracle, outside the construction read count.
+
+This proves the selected representation can be formed without scanning the annex,
+provided route/session/security/ownership admission is independently satisfied.
+The witness does not implement those predicates, select a route, authenticate the
+annex or measure the kernel's reads. A damaged annex can still be represented;
+our independent full-wire oracle rejects it. Construction feasibility must never
+replace native admission, replay protection or full output verification.
+
+The terminal reports four separately accounted native copy stages: ingress,
+DIRECT material, assembly preparation and carrier accepted copy. Each must be
+zero over all 64 records, including warmup. The reader requires 64 admissions,
+64 units, balanced positive logical retains/releases, no fallback or pending
+records, and complete cleanup. Missing counters are not interpreted as zero.
+
+The tested modules isolate shared skb header metadata without copying packet
+bytes. Observers retain read-only backing under kernel COW; their references can
+prolong credit retention. The runner closes capture sockets before module unload.
+This does not prove physical memory release or whole-stack zero-copy.
+
+With control shape, routing/session state and number of segments fixed, a useful
+conditional model is W_construct=O(H+Q(M)+k), versus a full-copy cost Theta(N).
+Here H denotes control work, Q(M) state lookup work, and k segment count. The
+20-byte witness covers representation framing only, not the H+Q(M) admission
+work. Locks, revocation, ownership and errors must still be handled; no constant
+routing latency or CPU offload percentage follows from this expression.
+
+A complete native access-limit result would require evidence from the real
+admitted parser/resolver/revalidation path and separate attribution of transport,
+including fallbacks. A routing-only CPU measurement would additionally need
+packet-associated, non-overlapping timing/work boundaries. Neither is inferred
+from end-to-end throughput or a synthetic replica benchmark. This edition pins
+core/Ethernet product843b3997815f9d79876dacfde7c441f4eb848bb6. Its historical
+crypto dependency binaries were not rebuilt at that commit.

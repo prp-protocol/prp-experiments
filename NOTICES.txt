@@ -1,4 +1,4 @@
-PRP selected experiment sources
+EXP-002 selected consumer sources
 
 Original consumer sources and documentation in this selected release are licensed
 under the accompanying MIT LICENSE, as approved by the user on 2026-10-16.
@@ -14,7 +14,7 @@ These third-party notices remain separate from the consumer MIT license.
 
 OpenSSL, zlib, Python, QEMU and host development/runtime tools are external
 prerequisites, not implementations bundled in this source archive. The PDF embeds
-subsets of Source Sans Pro and TeX fonts; it is the previously approved PDF.
+subsets of Source Sans Pro and TeX fonts; the consolidated report was approved on 2026-10-17.
 
 No image, module binary, identity key, private header, Git history or old guest
 receipt is bundled. The separate native-assets manifest identifies required
@@ -22,14 +22,6 @@ payloads. The production edition supplies separate source and notice artifacts
 and exact distro-source references; no third-party material is relicensed.
 The complete kmod tree is not exported.
 
-Production1.0.0: separate module-sources.tar.gz and image-notices.tar.gz accompany
-the binaries. release/image-sources.json provides exact official distro-source
-references. Original license texts remain authoritative; consumer MIT does not
-relicense any distro or product material. EXP-002 has a user-reported independent notebook result; full qualification is not inferred.
-
-EXP-001 includes a licensed libprp build subset from immutable commit
-b0d68882b37045231325843ac23f035f4ff901a2. The exact source manifest, compressed
-archive and notices are under experiments/exp-001-relationship-dataplane-separation/
-dependency/. The archive retains first-party MIT and the six upstream libraries
-licenses/notices. It includes no private Git history, internal/reference trees or
-keys. This is an experiment dependency subset, not a new certified SDK release.
+Edition 1.5.0: updated core/Ethernet and bounded corresponding sources; historical
+crypto dependencies and distro image are unchanged. EXP-001 source notices are
+in its bundled licensed source subset. All original third-party licenses apply.

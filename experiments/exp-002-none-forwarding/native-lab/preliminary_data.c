@@ -61,7 +61,11 @@ static int cleanup(void *v){(void)v;return 0; /* Socket owner closes after route
 static int valid(struct sf_flow *a,struct sf_flow *d){struct rp_handle x,y;return !sf_active_ticket(a,&x)&&!sf_active_ticket(d,&y)&&x.pool==&storage.pool&&y.pool==&storage.pool;}
 int pd_run(struct sf_flow *a,struct sf_flow *d,struct so_owner *o,struct so_owner *packets,uint16_t family,uint32_t *seq,const struct pair_plan *plan){
  int rc=0;struct em_preparation prep={0};struct ep_io io={0};
+#ifdef PD_REFERENCE_ONLY
+ printf(",\"preliminary\":{\"schema\":\"EXP002-REFERENCE-DATA-1\",\"records_per_mode\":%u,\"warmup_records\":%u,\"payload_bytes\":%u,\"pilot\":false,\"order\":[%u],\"runs\":[",PD_MEASURED,PD_WARMUP,EG_PAYLOAD,pd_mode(1));
+#else
  printf(",\"preliminary\":{\"schema\":\"EXP002-SHORT-DATA-2\",\"records_per_mode\":%u,\"warmup_records\":%u,\"payload_bytes\":%u,\"pilot\":false,\"order\":[%u,%u],\"runs\":[",PD_MEASURED,PD_WARMUP,EG_PAYLOAD,pd_mode(1),pd_mode(2));
+#endif
  if(!valid(a,d)||!seq||*seq>UINT32_MAX-EP_COUNT||control_fd<0){rc=-EINVAL;goto done;}
  if(plan->role==2){
   struct ew_tx tx={family,*seq+1,o->plan.binding,a->active.peer};struct ew_link link={.netns=o->plan.netns_ino,.epoch=o->plan.epoch,.ifindex=packets[1].plan.binding,.direction=1};
@@ -80,7 +84,7 @@ int pd_run(struct sf_flow *a,struct sf_flow *d,struct so_owner *o,struct so_owne
   if(rc)goto done;
   io=es_operations(&storage.backend);*seq+=EP_COUNT;
  }
- for(unsigned phase=1;phase<=2&&!rc;phase++){
+ for(unsigned phase=1;phase<=PD_PHASES&&!rc;phase++){
   unsigned mode=pd_mode(phase);
   if(phase>1)putchar(',');
   printf("{\"mode\":%u",mode);
@@ -123,9 +127,9 @@ int pd_run(struct sf_flow *a,struct sf_flow *d,struct so_owner *o,struct so_owne
 #ifdef PD_WARMED
  /* No future receive call occurs after this point. The unoffered tail is
     never referenced by a retained record; kernel socket queues do not write it. */
- _Static_assert((EP_COUNT-2*PD_PER_MODE)*1104>=327680+RX_PACKED_MAX,"Unused receive tail");
- int export_error=rx_begin(&packed,storage.received[2*PD_PER_MODE],
-                          (EP_COUNT-2*PD_PER_MODE)*1104);
+ _Static_assert((EP_COUNT-PD_PHASES*PD_PER_MODE)*1104>=327680+RX_PACKED_MAX,"Unused receive tail");
+ int export_error=rx_begin(&packed,storage.received[PD_PHASES*PD_PER_MODE],
+                          (EP_COUNT-PD_PHASES*PD_PER_MODE)*1104);
 #endif
  if(plan->role==2&&storage.ledger.pool){
   size_t at=0;unsigned count=0;while(at<storage.ledger.length){unsigned char header[64];const unsigned char *body;size_t n,next;int e=el_record(&storage.ledger,at,header,&body,&n,&next);if(e){if(!rc)rc=e;break;}

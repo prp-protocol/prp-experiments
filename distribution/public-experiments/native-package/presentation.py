@@ -3,6 +3,8 @@ import json
 
 
 def comparison(result, directory):
+    if result['state']=='PASS_NATIVE_REFERENCE_FORWARDING':
+        return reference_forwarding(result,directory)
     print('\nEXP-002 — COPY and REFERENCE forwarding')
     print('Result: '+result['state'])
     print(f"Payload: {result['payload_bytes']} bytes; warmup: {result['warmup']}; repetitions: {result['repetitions']}.")
@@ -41,6 +43,11 @@ def comparison(result, directory):
                   f"{c['assembly_carrier_accepted_copy_bytes']:>9,}")
         print('Ingress/carrier still copy whole units in this implementation. These counters')
         print('are logical operations, not total CPU work, cache misses or DRAM traffic.')
+    elif result['state'] in ('PASS_SCOPED_RX_TX_REFERENCES','COPY_FALLBACK_OBSERVED'):
+        print('Explicit RX/TX reference qualification; logical copied bytes including warmup:')
+        for row in result['runs']:
+            print(row['mode']+': '+json.dumps(row['copy_stages']['deltas'],sort_keys=True))
+        print('Zero means no copies in these four instrumented operations, not every layer.')
     else:
         print('Complete stage-copy accounting unavailable; missing counters are not zero.')
     print(f"COPY/REFERENCE elapsed-time ratio: {result['copy_over_reference_time']:.3f}.")
@@ -60,6 +67,12 @@ def comparison(result, directory):
         relation=('slower than' if reference['elapsed_ns']>copy['elapsed_ns'] else
                   'faster than' if reference['elapsed_ns']<copy['elapsed_ns'] else 'as fast as')
         print('In this measurement, REFERENCE was '+relation+' COPY; this alone does not establish a performance advantage.')
+    elif result['state']=='PASS_SCOPED_RX_TX_REFERENCES':
+        print('Conclusion: onion forwarding preserved delivery and avoided all four counted')
+        print('copy operations in REFERENCE. This is a scoped software-path result.')
+    elif result['state']=='COPY_FALLBACK_OBSERVED':
+        print('Conclusion: delivery passed, but the enabled reference path still fell back')
+        print('to copying. This is not a successful copy-elimination qualification.')
     else:
         print('Conclusion: these results do not establish copy-free forwarding preparation.')
     if not result['statistical_speedup']:print('No statistical speedup established.')
@@ -84,10 +97,34 @@ class Events:
             role=event.get('role','guest')
             if event.get('event')=='held_child': message=f'Guest {role}: process created.'
             elif event.get('event')=='qmp_ready': message=f'Guest {role}: management channel ready.'
-            elif event.get('event')=='guest_observed':message=f"Guest {role}: kernel {event['kernel']} observed after {event['elapsed_s']:.1f} s."
+            elif event.get('event')=='guest_observed':message=f"Guest {role}: kernel {event['kernel']} observed after {event['elapsed_s']:.1f} s (startup elapsed time)."
             elif 'state' in event:message=f"Guest lifecycle: {event['state']}."
             else:message='Progress event saved to evidence.'
             self.terminal.write(message+'\n');self.terminal.flush()
         return len(text)
     def flush(self):
         self.evidence.flush();self.terminal.flush()
+
+
+def reference_forwarding(result,directory):
+    row=result['runs'][0];g=result['onion_peeling']['geometry']
+    print('\nEXP-002 — Onion forwarding by references')
+    print('Result: '+result['state'])
+    print(f"Verified {result['onion_peeling']['records']} input/output frame pairs, including warmup.")
+    print(f"One {g['removed_direct_bytes']}-byte DIRECT layer removed; {g['input_prp_bytes']} -> {g['output_prp_bytes']} PRP bytes.")
+    print(f"The remaining {g['preserved_bytes']} child/annex bytes were preserved exactly.")
+    print('Counted copies: ingress 0; DIRECT 0; preparation 0; carrier 0.')
+    print('Kernel counters record logical bytes copied at four specific operations:')
+    print('receiving the packet, peeling DIRECT, preparing output, and carrier submission.')
+    print('Zero means these operations avoided copying; it does not count all memory reads.')
+    print('Independent captured frames are compared byte for byte after measurement.')
+    witness=result['onion_peeling'].get('descriptor_witness')
+    if witness and witness['state']=='PASS_CONDITIONAL_REPRESENTATION':
+        print('The offline descriptor witness reads 20 control bytes and references the body.')
+        print('Those 20 bytes describe that witness, not measured kernel reads or routing CPU cost.')
+    print('Conclusion: the tested aggregator forwarded and peeled the onion without')
+    print('the four instrumented PRP copy operations. No COPY treatment is executed.')
+    print(f"Descriptive measurement: {row['verified_payload_bytes']} useful bytes in {row['elapsed_ns']/1e6:.3f} ms.")
+    print('This does not measure all CPU reads, physical memory traffic or NIC offload.')
+    print('No relative speedup is claimed. Annex checking is disabled; bytes are validated after measurement.')
+    print('Evidence: '+str(directory))

@@ -1,6 +1,6 @@
 {
   "schema": "exp002-native-downloads-1",
-  "release_sha256": "e67440ba404b2ea25517011c6db94a79e8423112ef57423998e8b83cdda710b3",
+  "release_sha256": "8c0e6fe895e752c01ee7418e7886b857651e261d0303aaf6fee494128c472611",
   "files": [
     {
       "name": "blake3.ko",
@@ -34,21 +34,21 @@
     },
     {
       "name": "module-sources.tar.gz",
-      "bytes": 326850,
-      "sha256": "62bb4341b53be886fce7b8ab3dfdecb3bfaaa778c0e50383d62fc6706b83b612",
-      "url": "https://download.prp-protocol.org/exp002/releases/1.0.0/module-sources.tar.gz"
+      "bytes": 331059,
+      "sha256": "6b3dc663586c1bc29afbe87e29bb61ca631a57c9e3c8fb8bd06ce88e82b0737f",
+      "url": "https://download.prp-protocol.org/exp002/releases/1.5.0/module-sources.tar.gz"
     },
     {
       "name": "prp_adjacencies.ko",
-      "bytes": 11330752,
-      "sha256": "ca12961d790e37adcd8be39ec6f6e1221ce7f4c56095aa27db8dcfacb0249c89",
-      "url": "https://download.prp-protocol.org/exp002/releases/1.0.0/prp_adjacencies.ko"
+      "bytes": 11389960,
+      "sha256": "9e476cc8d8417b71bb83758b826a0b3e4ea6581edeece6f7ac329d2961a6a70d",
+      "url": "https://download.prp-protocol.org/exp002/releases/1.5.0/prp_adjacencies.ko"
     },
     {
       "name": "prp_carrier_ethernet.ko",
-      "bytes": 922584,
-      "sha256": "b96e3b1bd2133703d52564f6bdba79f31c82236c41923a86774ffdf487f8d6a4",
-      "url": "https://download.prp-protocol.org/exp002/releases/1.0.0/prp_carrier_ethernet.ko"
+      "bytes": 922136,
+      "sha256": "716c55d83187464c91412a0efa60d3c63f59776ca2571e26016694f8d1d16c27",
+      "url": "https://download.prp-protocol.org/exp002/releases/1.5.0/prp_carrier_ethernet.ko"
     }
   ]
 }

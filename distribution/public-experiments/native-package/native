@@ -31,7 +31,7 @@ def install(a):
   if p.returncode:raise RuntimeError('Consumer build failed; see install-commands.json')
  try:
   # Build own sources only; no downloaded build hooks or sibling checkout.
-  run([sys.executable,LAB/'build_m1.py',dest/'probe-build','--preliminary','--prp-capture','--warmed','--opaque-transit'])
+  run([sys.executable,LAB/'build_m1.py',dest/'probe-build','--preliminary','--prp-capture','--warmed','--opaque-transit']+(['--reference-only'] if a.permanent_references else []))
   run([sys.executable,LAB/'identities/build.py',dest/'identity-build'])
   run(['cc','-std=c11','-O2','-Wall','-Wextra','-Werror','-fPIC','-shared',PKG/'held_spawn.c','-o',dest/'held_spawn.so'])
   shutil.copyfile(dest/'probe-build/socket_probe',dest/'socket_probe');os.chmod(dest/'socket_probe',0o700)
@@ -41,6 +41,7 @@ def install(a):
   if pin!=release['image']['sha256']:raise ValueError('Selected base bytes differ')
   spec=release['image']
   state={'schema':'exp002-native-install-1','release':str(pathlib.Path(a.release).absolute()),'release_sha256':a.release_sha256,'artifacts':str(pathlib.Path(a.artifacts).absolute()),'base':str(pathlib.Path(a.base).absolute()),'image':spec,'base_identity':base_identity,'native_run':False}
+  state['permanent_references']=a.permanent_references
   for k,n in [('helper','held_spawn.so'),('probe','socket_probe'),('identity_helper','public_identity')]:state[k]={'file':n,'sha256':sha(dest/n)}
   json_write(dest/'native-install.json',state)
   print('Consumer binaries and selected read-only base verified. No VM started. Run requires an isolated TAP/vhost-capable Linux host.')
@@ -82,6 +83,14 @@ def execute(a):
    network,fds=network_owner.create(run,end);network_pin=sha(network)
    result['network_scope']='NEW_ISOLATED_LINUX_NAMESPACE_TAP_VHOST'
   args=['boot_pair','--started',str(started),'--directory',str(run/'native'),'--helper',str(root/'held_spawn.so'),'--prepared',str(run/'disks'),'--modules','--socket-probe',str(root/'socket_probe'),'--private-identities',str(run/'identities'),'--identity-manifest-sha256',sha(run/'identities/public.json'),'--paired-route','--preliminary','--deployment',installed['release'],'--deployment-sha256',installed['release_sha256'],'--artifacts',installed['artifacts'],'--network-manifest',str(network),'--network-sha256',network_pin]
+  if a.permanent_references:
+   if not installed.get('permanent_references') or a.rx_tx_references:raise ValueError('Permanent consumer installation binding')
+   args.append('--permanent-references')
+  elif installed.get('permanent_references'):raise ValueError('Permanent installation needs explicit profile')
+  if getattr(a,'setup_diagnostic',False):
+   if not a.permanent_references:raise ValueError('Setup diagnostic requires permanent profile')
+   args.append('--setup-diagnostic')
+  if a.rx_tx_references:args.append('--rx-tx-references')
   import boot_pair
   # The launcher consumes the network-owner originals. Retain independent
   # duplicates, never close recycled descriptor numbers after it returns.
@@ -96,7 +105,7 @@ def execute(a):
   finally:sys.argv=original
   if rc:raise RuntimeError('Native run incomplete; original receipt preserved')
   from read_preliminary import verify
-  checked=verify(json.loads((run/'native/receipt.json').read_text()))
+  checked=verify(json.loads((run/'native/receipt.json').read_text()),reference_profile=a.rx_tx_references,permanent=a.permanent_references)
   json_write(run/'verification.json',checked)
   import cleanup
   cleanup.capture(run)
@@ -120,10 +129,14 @@ def main():
  p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest='action',required=True)
  i=sub.add_parser('install')
  for name in ('release','release-sha256','artifacts','base','directory'):i.add_argument('--'+name,required=True)
+ i.add_argument('--permanent-references',action='store_true')
  r=sub.add_parser('run')
+ r.add_argument('--setup-diagnostic',action='store_true')
+ r.add_argument('--permanent-references',action='store_true')
  for name in ('installation','directory'):r.add_argument('--'+name,required=True)
+ r.add_argument('--rx-tx-references',action='store_true',help=argparse.SUPPRESS)
  r.add_argument('--inherited-network',help=argparse.SUPPRESS);r.add_argument('--network-sha256',help=argparse.SUPPRESS)
- v=sub.add_parser('verify');v.add_argument('directory')
+ v=sub.add_parser('verify');v.add_argument('--permanent-references',action='store_true');v.add_argument('directory');v.add_argument('--rx-tx-references',action='store_true',help=argparse.SUPPRESS)
  c=sub.add_parser('clean');c.add_argument('directory')
  a=p.parse_args()
  if a.action=='install':install(a);return 0
@@ -136,7 +149,7 @@ def main():
   print('To remove installation/downloads too: sudo ./experiment uninstall')
   return 0
  from read_preliminary import verify
- result=verify(json.loads((pathlib.Path(a.directory)/'native/receipt.json').read_text()))
+ result=verify(json.loads((pathlib.Path(a.directory)/'native/receipt.json').read_text()),reference_profile=a.rx_tx_references,permanent=a.permanent_references)
  record=pathlib.Path(a.directory)/('verification-'+str(time.time_ns())+'.json')
  json_write(record,result)
  from presentation import comparison

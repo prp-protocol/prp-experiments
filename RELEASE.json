@@ -1,8 +1,7 @@
 {
-  "schema": "prp-experiments-source-release-1",
-  "version": "1.4.0",
-  "native_assets_version": "1.0.0",
-  "independent_host_validation": "EXP002_USER_REPORTED_PRELIMINARY_PASS; EXP001_LOCAL_ISOLATED_EXPORT_PASS",
+  "schema": "exp002-production-release-1",
+  "version": "1.5.0",
+  "independent_host_validation": "PENDING_USER_NOTEBOOK",
   "announced": false,
   "files": [
     {
@@ -13,12 +12,7 @@
     {
       "path": ".gitignore",
       "bytes": 42,
-      "sha256": "085b12b5c042fbfa95a9bfa134d30bcf15512245c3e7a84cfa1814e2637ebd39"
-    },
-    {
-      "path": "EXP-002.pdf",
-      "bytes": 173804,
-      "sha256": "a4626dac08699bd3fc78680a8c248e9a1acaa14d203d50c40114dd4f50b5d71d"
+      "sha256": "5183d551504e5ddc86ad7d732335267e0280fe988be582256a5b33f840aea178"
     },
     {
       "path": "LICENSE",
@@ -27,28 +21,38 @@
     },
     {
       "path": "NOTICES.txt",
-      "bytes": 2243,
-      "sha256": "efa57c658408a12fe7e0b6b885ab633e3325af271d56e9a467218791afffe360"
+      "bytes": 1650,
+      "sha256": "e7ae5dc7be68350c7afb974d52b4368192557ac43afb6e3773a976c6898880f3"
+    },
+    {
+      "path": "PRP-EXPERIMENTS.pdf",
+      "bytes": 176613,
+      "sha256": "9e93a38a525b09a1804d9f3e7126f5b838ae435a86bc068c9cf3d9f4b61fccbe"
+    },
+    {
+      "path": "PRP-EXPERIMENTS.tex",
+      "bytes": 13204,
+      "sha256": "10e8eebbb8a6ae25e9d40924cbad1916d488a7c7c4ae9d09303e8d4d9bef7c63"
     },
     {
       "path": "PUBLIC-README.txt",
-      "bytes": 14881,
-      "sha256": "8174f9bdbcd4df85fce8d99885702eb161d77c721496fb99176b5062293e3d51"
+      "bytes": 15266,
+      "sha256": "ce71c062c59bf4d8ee8815ff5f176d0b55cd56805d2d9daac8c6a06ee4bb8cc7"
     },
     {
       "path": "README.md",
-      "bytes": 554,
-      "sha256": "7c4b0f764a482c453bcff89d961b9327f22d676dbd9d177841ef07b98ae8c759"
+      "bytes": 1252,
+      "sha256": "50d1bb50d025b407501d0550630c3a6a1e7304c54b6f0a1b8d8c9ff1e086fb05"
     },
     {
       "path": "README.txt",
-      "bytes": 5761,
-      "sha256": "4fe421eb447a03916816ae69779847fc030311a05b6bcfe6104a478725facd15"
+      "bytes": 15266,
+      "sha256": "ce71c062c59bf4d8ee8815ff5f176d0b55cd56805d2d9daac8c6a06ee4bb8cc7"
     },
     {
       "path": "SOURCE-MANIFEST.json",
-      "bytes": 28116,
-      "sha256": "d440efc5a31d26e7c93ed10c5bdfce36f92aabed384e1714c7851b50897bf80a"
+      "bytes": 28117,
+      "sha256": "a9dafcf4f2e8a014fdb1543fc40400ba85a2695bd5e23fdaa75db8e62cc9d77d"
     },
     {
       "path": "distribution/public-experiments/native-package/cleanup.py",
@@ -77,8 +81,8 @@
     },
     {
       "path": "distribution/public-experiments/native-package/native",
-      "bytes": 8968,
-      "sha256": "49011a414bc5821c0bc118e6cd4092c077dd3d8053c3d4422e1b165a077e0fb2"
+      "bytes": 10169,
+      "sha256": "cd28b02bf6ee2c094f01557d714d3a8bc40826bbf2a1bf75bfeed218ee521cee"
     },
     {
       "path": "distribution/public-experiments/native-package/network_owner.py",
@@ -87,13 +91,13 @@
     },
     {
       "path": "distribution/public-experiments/native-package/presentation.py",
-      "bytes": 6295,
-      "sha256": "63c9c246b9e519e87a8acefb3676aaccc330f7de2a7acc4c0381041f1b807104"
+      "bytes": 9143,
+      "sha256": "2c7eb725f2f56078728d26ff8e7df7b0397804e81ee28b5df8716362028437f2"
     },
     {
       "path": "distribution/public-experiments/native-package/public_entry.py",
-      "bytes": 11525,
-      "sha256": "c0e04991098a455be12a387bdfae2843e721b9b358c797997235bacdd81716c7"
+      "bytes": 11991,
+      "sha256": "0db1a63c31c1b442c5520fb7cad5607453290275722b22aee735b51814cf7c2b"
     },
     {
       "path": "distribution/public-experiments/native-package/release_download.py",
@@ -109,6 +113,11 @@
       "path": "distribution/public-experiments/native-package/test_full_cycle.py",
       "bytes": 9219,
       "sha256": "82b1cfb53673e7127853fbbbac5418773afa319fe26c6bdb570b91aed61eda56"
+    },
+    {
+      "path": "distribution/public-experiments/native-package/test_onion.py",
+      "bytes": 6510,
+      "sha256": "e186a21ae5c6ecbe8e51827231f651144996841b53e71dbf782259c160f00a6c"
     },
     {
       "path": "distribution/public-experiments/native-package/test_presentation.py",
@@ -337,13 +346,13 @@
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/boot_pair.py",
-      "bytes": 23304,
-      "sha256": "f7648ad6d1687d1646fc0de9027adc927c1f95b8f6fb60429978269f4e7b77b6"
+      "bytes": 24406,
+      "sha256": "d033fc3725cb08bfde4bdf8ac81fdea4c1aeabc3b310c1d7cf7983a10adc3dbe"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/build_m1.py",
-      "bytes": 3870,
-      "sha256": "6790f9e6c845c723e61f53cf23e1a9448e27bd6e9b4ca54d24f8834f64266393"
+      "bytes": 4237,
+      "sha256": "a8e799e4562d25f00f3c562585a058dd4c8d4abff561f9bbc628552be0d143b1"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/captured_m1.c",
@@ -377,8 +386,8 @@
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/data_sync.py",
-      "bytes": 4780,
-      "sha256": "27075abf5aa76b7f7192f2195c3fbdfcff1f496295b143502e6c0d9fab8bb475"
+      "bytes": 4985,
+      "sha256": "593d9dd9ecbb5bb50eefc7cced9b5e57f2574fa03450eea45048f8de06b7dabf"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/evidence_io.py",
@@ -447,8 +456,8 @@
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/module_smoke.py",
-      "bytes": 12602,
-      "sha256": "9a14a730bf421f451b0a92beda237ae07471a8587633534ac2eed29b27231af8"
+      "bytes": 15967,
+      "sha256": "82dd8b28eadfde59de30207b931faace7c0b9bb2038518c68b148a93bcc39530"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/pair_plan.c",
@@ -487,8 +496,8 @@
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/preliminary_data.c",
-      "bytes": 10219,
-      "sha256": "7f2c4d784beb6e2031f97f694680089cb24267be81b1ba1a511bdeb2475fcee8"
+      "bytes": 10511,
+      "sha256": "196cc62523e6f5976271c8ee2ab3e8dfeb992c94052ecd483783dcfc55ba214d"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/preliminary_data.h",
@@ -497,8 +506,8 @@
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/preliminary_profile.h",
-      "bytes": 720,
-      "sha256": "5cbc41dc69cd80909de344889cb7cab9b0f7deae4d34c0c539b86a89e639b0c4"
+      "bytes": 866,
+      "sha256": "ef9610d47447858e5c35a133b2448a693db22b2a3d57ae6166157f1e5f1d531e"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/raw_export.c",
@@ -512,8 +521,8 @@
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/read_preliminary.py",
-      "bytes": 13866,
-      "sha256": "07931b493a10262dfa2d49a2051ea872ce979cafc7640c200d79200902d3ab3a"
+      "bytes": 16778,
+      "sha256": "686ba64179de30a5197b91fc25235bf0f53be6eb0856e972ef7fa2f8466f791a"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/receipt_store.c",
@@ -559,6 +568,11 @@
       "path": "experiments/exp-002-none-forwarding/native-lab/suite_query.h",
       "bytes": 312,
       "sha256": "b724726e11ad27bffe2e2a6dee69732ff01314c6e687c257d7a75f14f3cc92e6"
+    },
+    {
+      "path": "experiments/exp-002-none-forwarding/processing-proof/projection.py",
+      "bytes": 2342,
+      "sha256": "1fa4c67f25d165dcaaa55cb1a4772fd549d6116980506337b7fb687207272dfb"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/fanout_flow.c",
@@ -728,12 +742,12 @@
     {
       "path": "release/defaults.json",
       "bytes": 203,
-      "sha256": "bff83f3d65df6893c2e48dff0cfd4a6a7f51f06122bab94e98248a29291fcfa4"
+      "sha256": "e8d776eccafabfed74735a5197385d652521a0f7a408fa3ac80c24b5b994eb58"
     },
     {
       "path": "release/downloads.json",
       "bytes": 2094,
-      "sha256": "4abd5a41f95a1f4a93447f1e48449075d41d95fa35584b1fdf1faa040850f3b8"
+      "sha256": "e2963d4c342ebb8aa33a8eac37d0dfb9d7181deca1b4a54a961b1bda5624137b"
     },
     {
       "path": "release/image-sources.json",
@@ -743,7 +757,12 @@
     {
       "path": "release/native-assets.json",
       "bytes": 1171,
-      "sha256": "e67440ba404b2ea25517011c6db94a79e8423112ef57423998e8b83cdda710b3"
+      "sha256": "8c0e6fe895e752c01ee7418e7886b857651e261d0303aaf6fee494128c472611"
+    },
+    {
+      "path": "release/provenance.json",
+      "bytes": 720,
+      "sha256": "3021fea0cc952e289ed2c2c2a413757ee9c429c717d4246f93edb2893fd94c48"
     },
     {
       "path": "repair-checkout.py",
@@ -759,17 +778,6 @@
       "path": "tools/reproduce-exp-001",
       "bytes": 20076,
       "sha256": "75cca2b264d846238eef8ac40f0dee0f8de3d40b01798a3c6879aa9d00085909"
-    },
-    {
-      "path": "distribution/public-experiments/native-package/test_onion.py",
-      "bytes": 6510,
-      "sha256": "e186a21ae5c6ecbe8e51827231f651144996841b53e71dbf782259c160f00a6c"
-    },
-    {
-      "path": "experiments/exp-002-none-forwarding/processing-proof/projection.py",
-      "bytes": 2342,
-      "sha256": "1fa4c67f25d165dcaaa55cb1a4772fd549d6116980506337b7fb687207272dfb"
     }
-  ],
-  "full_cycle_qualification": "HOST_COMPOSITION_TESTS; NO_NEW_NATIVE_CYCLE"
+  ]
 }

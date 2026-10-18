@@ -17,11 +17,14 @@ BASE=pathlib.Path('/opt/agentmux/vm/images/sha256/a9b0d42ceb48f79a1cefbe7674c7d4
 PIN=BASE.stem
 
 def main():
- ap=argparse.ArgumentParser();ap.add_argument('--started',type=float);ap.add_argument('--deployment');ap.add_argument('--deployment-sha256');ap.add_argument('--artifacts');ap.add_argument('--network-manifest');ap.add_argument('--network-sha256');ap.add_argument('--directory',required=True);ap.add_argument('--helper',required=True);ap.add_argument('--prepared',required=True);ap.add_argument('--modules',action='store_true');ap.add_argument('--socket-probe');ap.add_argument('--identity-probe');ap.add_argument('--private-input-fixture',action='store_true');ap.add_argument('--private-identities');ap.add_argument('--identity-manifest-sha256');ap.add_argument('--paired-handshake',action='store_true');ap.add_argument('--paired-route',action='store_true');ap.add_argument('--preliminary',action='store_true');ap.add_argument('--stage-timing',action='store_true');ap.add_argument('--route-timing',action='store_true');ap.add_argument('--route-timing-owned-guest',action='store_true');a=ap.parse_args()
+ ap=argparse.ArgumentParser();ap.add_argument('--started',type=float);ap.add_argument('--deployment');ap.add_argument('--deployment-sha256');ap.add_argument('--artifacts');ap.add_argument('--network-manifest');ap.add_argument('--network-sha256');ap.add_argument('--directory',required=True);ap.add_argument('--helper',required=True);ap.add_argument('--prepared',required=True);ap.add_argument('--modules',action='store_true');ap.add_argument('--socket-probe');ap.add_argument('--identity-probe');ap.add_argument('--private-input-fixture',action='store_true');ap.add_argument('--private-identities');ap.add_argument('--identity-manifest-sha256');ap.add_argument('--paired-handshake',action='store_true');ap.add_argument('--paired-route',action='store_true');ap.add_argument('--setup-diagnostic',action='store_true');ap.add_argument('--permanent-references',action='store_true');ap.add_argument('--rx-tx-references',action='store_true');ap.add_argument('--preliminary',action='store_true');ap.add_argument('--stage-timing',action='store_true');ap.add_argument('--route-timing',action='store_true');ap.add_argument('--route-timing-owned-guest',action='store_true');a=ap.parse_args()
  if a.deployment and not all((a.deployment_sha256,a.artifacts,a.network_manifest,a.network_sha256)):ap.error('Complete pinned standalone deployment required')
  if a.route_timing_owned_guest and not a.route_timing:ap.error('owned guest trace requires route timing')
  if a.route_timing and (not a.preliminary or a.stage_timing):ap.error('route timing requires preliminary and excludes stage timing')
+ if a.setup_diagnostic and (not a.permanent_references or a.stage_timing or a.route_timing):ap.error('Setup diagnostic requires permanent profile without timing study')
  if a.stage_timing and not a.preliminary:ap.error('stage timing requires preliminary profile')
+ if a.permanent_references and (a.rx_tx_references or not a.preliminary or not a.modules or not a.socket_probe or not a.deployment):ap.error('Permanent references require separate pinned preliminary profile')
+ if a.rx_tx_references and (not a.preliminary or not a.modules or not a.socket_probe):ap.error('Reference qualification requires preliminary module/probe profile')
  if a.preliminary and not a.paired_route:ap.error('--preliminary requires paired-route')
  if a.private_identities and (not a.modules or not a.socket_probe or a.private_input_fixture):ap.error('Private identities require module/socket probe and exclude fixtures')
  if a.paired_route:
@@ -74,7 +77,7 @@ def main():
   if not a.preliminary:return
   if relay is None:
    from data_sync import Relay
-   relay=Relay({r:receipt['guests'][r]['nonce'] for r in ('endpoint','dut')},setup=True)
+   relay=Relay({r:receipt['guests'][r]['nonce'] for r in ('endpoint','dut')},setup=True,phases=1 if a.permanent_references else 2)
   for role in ('endpoint','dut'):
    b=bytes(buffers[(role,'stdout')]);at=sync_offsets.get(role,0)
    while b'\n' in b[at:]:
@@ -167,6 +170,8 @@ def main():
      if len(raw)>2097152:raise RuntimeError('Socket probe binary cap')
      (seed/'socket_probe').write_bytes(raw);probe_pin=hashlib.sha256(raw).hexdigest()
      probe_meta={'sha256':probe_pin,'bytes':len(raw),'role':role,'preliminary':a.preliminary}
+     if a.permanent_references:probe_meta['reference_profile']='PERMANENT_NONE_REFERENCES_V1'
+     if a.rx_tx_references and role=='dut':probe_meta['reference_profile']='RX_TX_REFERENCES_V1'
      if a.route_timing and role=='dut':
       probe_meta['route_timing']=True
       probe_meta['route_timing_owned_guest']=a.route_timing_owned_guest
@@ -174,8 +179,9 @@ def main():
        content=pathlib.Path(__file__).with_name(filename).read_text()
        receipt[filename+'_sha256']=hashlib.sha256(content.encode()).hexdigest()
        user['write_files'].append({'path':'/root/'+filename,'permissions':'0600','content':content})
-     if a.stage_timing and role=='dut':
-      probe_meta['stage_timing']=True
+     if a.setup_diagnostic and role=='endpoint':probe_meta['setup_diagnostic']=True
+     if (a.stage_timing and role=='dut') or (a.setup_diagnostic and role=='endpoint'):
+      if a.stage_timing:probe_meta['stage_timing']=True
       trace_source=pathlib.Path(__file__).with_name('stage_capture.py').read_text()
       receipt['stage_capture_sha256']=hashlib.sha256(trace_source.encode()).hexdigest()
       user['write_files'].append({'path':'/root/stage_capture.py','permissions':'0600','content':trace_source})

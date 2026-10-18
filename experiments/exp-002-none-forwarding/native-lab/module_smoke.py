@@ -2,9 +2,35 @@
 """Finite private-guest module load/readback/unload qualification; no PRP traffic."""
 import hashlib,json,os,pathlib,subprocess,time
 
+REFERENCE_PROFILE='RX_TX_REFERENCES_V1'
+PERMANENT_PROFILE='PERMANENT_NONE_REFERENCES_V1'
+PERMANENT_PINS={'prp_adjacencies':'bdb8cb4bd5889574bbbe4562409e93b5b7ac5ba972c68e61416f6ef231ecf75d','prp_carrier_ethernet':'e603a0077068c5bf9174a8a646844ec68aa8e20b26d9f5a910c7eaf7552ca4c9'}
+OBSERVER_PINS={'prp_adjacencies':'9e476cc8d8417b71bb83758b826a0b3e4ea6581edeece6f7ac329d2961a6a70d','prp_carrier_ethernet':'716c55d83187464c91412a0efa60d3c63f59776ca2571e26016694f8d1d16c27'}
+def permanent_binding(pin,manifest):
+ if pin.get('reference_profile')!=PERMANENT_PROFILE or pin.get('role') not in ('dut','endpoint') or pin.get('preliminary') is not True or pin.get('paired_route') is not True:raise RuntimeError('Permanent reference profile binding')
+ if not any(all(manifest.get(k,{}).get('sha256')==v for k,v in pair.items()) for pair in (PERMANENT_PINS,OBSERVER_PINS)):raise RuntimeError('Permanent module pins')
+
+def permanent_readback(parameters):
+ for m,k in [('prp_adjacencies','prp_tx_references'),('prp_carrier_ethernet','prp_carrier_ethernet_rx_references')]:
+  if m not in parameters or k in parameters[m]:raise RuntimeError('Permanent selector absence mismatch')
+ if parameters['prp_adjacencies'].get('prp_tx_reference_bytes')!='16777216':raise RuntimeError('Permanent reference budget')
+def reference_options(pin):
+ profile=pin.get('reference_profile')
+ if profile is None:return {}
+ if profile!=REFERENCE_PROFILE or pin.get('role')!='dut' or pin.get('preliminary') is not True or pin.get('paired_route') is not True:
+  raise RuntimeError('Invalid reference qualification binding')
+ return {'prp_adjacencies':['prp_tx_references=1'],
+         'prp_carrier_ethernet':['prp_carrier_ethernet_rx_references=1']}
+
+def reference_readback(parameters, enabled):
+ for module,key in [('prp_adjacencies','prp_tx_references'),('prp_carrier_ethernet','prp_carrier_ethernet_rx_references')]:
+  if parameters.get(module,{}).get(key)!=('Y' if enabled else 'N'):
+   raise RuntimeError('Reference parameter readback mismatch: '+key)
+
 def exercise(nonce=None):
  result={'schema':'EXP002-MODULE-SMOKE-1','state':'INCOMPLETE','primary':None,'secondary':[],'commands':[],'loaded':[],'unloaded':[],'pins':{},'parameters':{}}
  trace_capture=None
+ setup_capture=None
  buffer_restore=[];root=pathlib.Path('/run/exp002-seed');owned=[];mounted=False;start=time.monotonic();end=min(start+60,360);close_end=min(start+80,410)
  def read(p):
   try:return pathlib.Path(p).read_text().strip()
@@ -23,7 +49,12 @@ def exercise(nonce=None):
  try:
   if os.uname().release!='5.14.0-687.39.1.el9_8.x86_64':raise RuntimeError('Kernel mismatch')
   root.mkdir(mode=0o700);run(['/usr/bin/mount','-o','ro','/dev/sr0',str(root)]);mounted=True
+  early_pin=json.loads((root/'socket_probe.json').read_text()) if (root/'socket_probe.json').exists() else {}
+  permanent=early_pin.get('reference_profile')==PERMANENT_PROFILE
+  options={} if permanent else reference_options(early_pin)
+  result['reference_profile']=early_pin.get('reference_profile')
   manifest=json.loads((root/'modules.json').read_text());names=['blake3','ed25519','ed25519_blake3','prp_adjacencies','prp_carrier_ethernet']
+  if permanent:permanent_binding(early_pin,manifest)
   if set(manifest)!=set(names):raise RuntimeError('Module manifest scope')
   for name in names:
    raw=(root/'modules'/(name+'.ko')).read_bytes();pin=manifest[name]
@@ -47,12 +78,14 @@ def exercise(nonce=None):
     finally:
      if name in modules():owned.append(name);result['loaded'].append(name)
   for name in names:
-   try:run(['/usr/sbin/insmod',str(stage/(name+'.ko'))])
+   try:run(['/usr/sbin/insmod',str(stage/(name+'.ko'))]+options.get(name,[]))
    finally:
     if name in modules():owned.append(name);result['loaded'].append(name)
   for name in ['prp_adjacencies','prp_carrier_ethernet']:
    d=pathlib.Path('/sys/module')/name/'parameters'
    result['parameters'][name]={p.name:read(p) for p in sorted(d.iterdir())}
+  if permanent:permanent_readback(result['parameters'])
+  else:reference_readback(result['parameters'],bool(options))
   if (root/'socket_probe.json').exists():
    result['buffer_limits']=[]
    for name in ('rmem_max','wmem_max'):
@@ -119,6 +152,13 @@ def exercise(nonce=None):
       trace_capture=Capture(nonce,result['private_links'][0]['ifindex'],end,close_end,**trace_options)
       result['route_timing' if pin.get('route_timing') else 'stage_timing']=trace_capture.result
       trace_capture.prepare()
+     if pin.get('setup_diagnostic'):
+      if not permanent or pin['role']!='endpoint':raise RuntimeError('Setup diagnostic binding')
+      from stage_capture import Capture
+      setup_capture=Capture(nonce,result['private_links'][0]['ifindex'],end,close_end,event='prp_session_ethernet_ingress_enqueue')
+      setup_capture.result['phase']='setup'
+      result['setup_diagnostic']=setup_capture.result
+      setup_capture.prepare();setup_capture.boundary(2,'READY')
      r=guest_run([str(target),pin['role']],secret,pin['role'],nonce,min(end,time.monotonic()+40),trace_capture)
     else:r=subprocess.run([str(target),pin['role']],input=secret,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=min(20,left))
     del secret
@@ -153,6 +193,12 @@ def exercise(nonce=None):
     audit.seek(0,2);audit.seek(max(0,audit.tell()-8192));result['audit_tail']=audit.read(8192).decode(errors='replace')
   except OSError as error:result['audit_error']=str(error)
  finally:
+  if setup_capture is not None:
+   try:
+    if setup_capture.started and not setup_capture.stopped:setup_capture.boundary(2,'DONE')
+   except Exception as e:result['secondary'].append('Setup diagnostic: '+str(e))
+   finally:setup_capture.close()
+   if setup_capture.result['primary'] or setup_capture.owned:result['secondary'].append('Setup diagnostic incomplete')
   if trace_capture is not None:
    trace_capture.close()
    if trace_capture.result['primary'] or trace_capture.owned:result['secondary'].append('Trace capture/cleanup incomplete')

@@ -1,0 +1,11 @@
+{
+  "edition": "1.5.0",
+  "product_commit": "843b3997815f9d79876dacfde7c441f4eb848bb6",
+  "deployment_sha256": "8c0e6fe895e752c01ee7418e7886b857651e261d0303aaf6fee494128c472611",
+  "crypto_dependencies_rebuilt": false,
+  "profile": "PERMANENT_NONE_REFERENCES_V1",
+  "native_qualification": "Two isolated Rocky 9.8 guests; locked capture; 32 warmup + 32 measured; NONE; annex checking disabled; post-measurement full-frame comparison; settled cleanup",
+  "scope": "No all-CPU-read, physical-zero-copy, hardware-offload or statistical-speedup claim",
+  "module_source_build": "Bounded corresponding source supplied; no claim of bit-identical rebuild",
+  "independent_host_validation": "Pending for this updated edition"
+}
