@@ -6,16 +6,16 @@
 
 /* Exclusive, single-threaded parent/reaper; no callback or target discovery. */
 struct hs_plan {
-    int executable;             /* already pinned open ELF descriptor, >=4 */
-    int streams[4];              /* stdin/stdout/stderr/private QMP sources */
+    int executable; /* already pinned open ELF descriptor, >=4 */
+    int streams[4]; /* stdin/stdout/stderr/private QMP sources */
     char *const *argv;
     char *const *envp;
-    int64_t launch_end_ns;       /* original HOST phase end */
-    unsigned network_count;     /* 0 (legacy) or exactly 4: two TAP/vhost pairs */
-    int network[4];             /* sources map to child4..7; caller-owned */
+    int64_t launch_end_ns;  /* original HOST phase end */
+    unsigned network_count; /* 0 (legacy) or exactly 4: two TAP/vhost pairs */
+    int network[4];         /* sources map to child4..7; caller-owned */
 };
 struct hs_child {
-    pid_t pid;                  /* original fork return; never reconstructed */
+    pid_t pid; /* original fork return; never reconstructed */
     int pidfd, gate, exec_error;
     int started, owned, retired, release_attempted, release_possible;
     int primary, secondary;

@@ -1,5 +1,5 @@
 {
-  "edition": "1.5.0",
+  "edition": "1.5.1",
   "product_commit": "843b3997815f9d79876dacfde7c441f4eb848bb6",
   "deployment_sha256": "8c0e6fe895e752c01ee7418e7886b857651e261d0303aaf6fee494128c472611",
   "crypto_dependencies_rebuilt": false,

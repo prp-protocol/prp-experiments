@@ -1,12 +1,16 @@
 # PRP experiments
 
-Production edition 1.5.0. See [instructions](README.txt) and the
+Production edition 1.5.1. See [instructions](README.txt) and the
 [illustrated report: EXP-001 and EXP-002](PRP-EXPERIMENTS.pdf).
 
 - **EXP-001:** session establishment and authenticated encrypted packet processing.
 - **EXP-002:** NONE-suite onion forwarding through an aggregator by retained references.
   This edition runs no COPY comparison. Four scoped copy counters and full captured
   frames support the conclusion; all CPU reads and hardware offload are not measured.
+
+This patch formats consumer C sources and preserves DUT counters after a failed
+delivery phase. It does not change the 40 ms receive deadline or claim to resolve
+the reported forwarding timeout. Modules, image and PDF are unchanged.
 
 After cloning, on a supported Linux host with the listed prerequisites installed:
 
@@ -21,5 +25,5 @@ can take several minutes. No host packages are installed automatically.
 
 For separate installation/run/verification with retained evidence, see README.txt.
 Existing installations are not silently upgraded; use a fresh cycle or uninstall
-an old default installation before installing 1.5.0. No Agentmux or private checkout
+an old default installation before installing 1.5.1. No Agentmux or private checkout
 is required. This is the selected public subset, not the full product repository.

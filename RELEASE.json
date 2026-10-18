@@ -1,9 +1,14 @@
 {
   "schema": "exp002-production-release-1",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "independent_host_validation": "PENDING_USER_NOTEBOOK",
   "announced": false,
   "files": [
+    {
+      "path": ".clang-format",
+      "bytes": 352,
+      "sha256": "36f4afa5a4471850581e87b30916bbe10772b975455e79c33026633808cb8019"
+    },
     {
       "path": ".gitattributes",
       "bytes": 168,
@@ -21,8 +26,8 @@
     },
     {
       "path": "NOTICES.txt",
-      "bytes": 1650,
-      "sha256": "e7ae5dc7be68350c7afb974d52b4368192557ac43afb6e3773a976c6898880f3"
+      "bytes": 1800,
+      "sha256": "af949810cd019946f5efef772e52a6af26818c1003162fb2c4b63f3db110899d"
     },
     {
       "path": "PRP-EXPERIMENTS.pdf",
@@ -41,8 +46,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 1252,
-      "sha256": "50d1bb50d025b407501d0550630c3a6a1e7304c54b6f0a1b8d8c9ff1e086fb05"
+      "bytes": 1486,
+      "sha256": "2b0e254e859a73de0bed5e7957629ebf08503809e9ff469572cf3120b99972c0"
     },
     {
       "path": "README.txt",
@@ -51,8 +56,8 @@
     },
     {
       "path": "SOURCE-MANIFEST.json",
-      "bytes": 28117,
-      "sha256": "a9dafcf4f2e8a014fdb1543fc40400ba85a2695bd5e23fdaa75db8e62cc9d77d"
+      "bytes": 28270,
+      "sha256": "daf5758f6d899a869046580ba7f7e97d778de0a89c0b5cec99f0b095d22b0b11"
     },
     {
       "path": "distribution/public-experiments/native-package/cleanup.py",
@@ -156,13 +161,13 @@
     },
     {
       "path": "distribution/public-experiments/package/held_spawn.c",
-      "bytes": 9182,
-      "sha256": "034ce3708bf459ee4e4e8ee9951c651c3b1cc57ebe69e0cc800ccebef033d663"
+      "bytes": 11511,
+      "sha256": "2a26838af299804a7d282996ab759206f0c5f81d29dda1e48d33edc9e63d6340"
     },
     {
       "path": "distribution/public-experiments/package/held_spawn.h",
-      "bytes": 1509,
-      "sha256": "c1900a3093554dbe33e911a5f74e1c28d8fe56357d500651fdd2ff45ed372082"
+      "bytes": 1454,
+      "sha256": "7949dd67cc3bf03d519b0615c93792b2b666d80c21d29162b0f92866d515d629"
     },
     {
       "path": "distribution/public-experiments/package/image_cache.py",
@@ -217,7 +222,7 @@
     {
       "path": "experiments/exp-001-relationship-dataplane-separation/inputs.json",
       "bytes": 1034,
-      "sha256": "293d6ff9a5e20def21584440caf07de4b6d0a95e6f2536943e0a9a7589c16497"
+      "sha256": "fa61acc33068306fcd102f15e534e944de8ac36903e439e9e872d9ebbd1328dd"
     },
     {
       "path": "experiments/exp-001-relationship-dataplane-separation/source_bundle.py",
@@ -226,13 +231,13 @@
     },
     {
       "path": "experiments/exp-001-relationship-dataplane-separation/src/experiment.c",
-      "bytes": 18943,
-      "sha256": "f0add45f48708e576c0228f30a4d46a76c6777724e0edefc104ed05e7dc42267"
+      "bytes": 19691,
+      "sha256": "c5c2ba6e5ba88aee5c338384563a2e291bbea52ea55d83e5dec5cd08a37b8d20"
     },
     {
       "path": "experiments/exp-001-relationship-dataplane-separation/src/observer.c",
-      "bytes": 1455,
-      "sha256": "931ba52e4ec533b225276e1e71a36e378a5ad57357e2942b3440f0b54ec8d7c4"
+      "bytes": 1630,
+      "sha256": "9fc0d1f3e151d98ad5410b596ce96c0251041a24e88be84f31efacebb58e2b7a"
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/catalogue.py",
@@ -241,38 +246,38 @@
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/measure.h",
-      "bytes": 1518,
-      "sha256": "27bdf0ddf093f4d9e13fc4b4d63ab117253901ef3964b34da6e07c4b76cff96f"
+      "bytes": 1526,
+      "sha256": "1197338e8dfa3ed083687f9f5c9b9a34d4d44c7357b2a584901aad20022f7e81"
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/member_catalogue.c",
-      "bytes": 2216,
-      "sha256": "71d6c73fd813cf5a41da82b0d67d16528a22ed8d545705c3b8fb1e6b6c2951fc"
+      "bytes": 2896,
+      "sha256": "6a57eecc6833f2090a49b2d91315dc34a4595eb1c154c6454f83134de5fbd741"
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/member_catalogue.h",
-      "bytes": 484,
-      "sha256": "a61f2e8df9685e8a504fe5803ccdafef82248bab8f4da8a00a1e817e0b9cfc6c"
+      "bytes": 504,
+      "sha256": "5a8193ac2f71f4229113b3c734eb399f4224bd983d6f3f40f9fa2b79bc789fa0"
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/member_prepare.c",
-      "bytes": 2635,
-      "sha256": "88fbbe6d87a4773153b75d4e5ea426e0640cbf61abdae578ea0cb4dd0f0106b7"
+      "bytes": 3194,
+      "sha256": "ab65ba37578660b295804a9fbc677ce5c8ee5cedbc46b822296743afdd5ca15b"
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/member_prepare.h",
-      "bytes": 1240,
-      "sha256": "363748bbfbb39facfeb93b8f09bffa76dc348e7f39c62ad4b744ad3abe6efa95"
+      "bytes": 1344,
+      "sha256": "83062b3f5b2cc79280bc5cbc94543789ff8d35373c69d8dcaa3a415b2187b172"
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/member_storage.h",
-      "bytes": 1223,
-      "sha256": "bd62917cb6a4517665637b7394ce8bd04e88693c73cc12f6a4a68f283e8e38de"
+      "bytes": 1278,
+      "sha256": "1b31a282d70129ade797ff437e7fcdfac829e34860cb16b4fc3c28f2fad334a5"
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/packet_filter.c",
-      "bytes": 978,
-      "sha256": "493a28db48950f9d7e37d2d9d65174db9210fba4ca33ededd69d173b4fee5a80"
+      "bytes": 1113,
+      "sha256": "02facb2f4f4041b9ffac9b24e92486128b96990c4d018d6503c1a810e33193a3"
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/packet_filter.h",
@@ -281,68 +286,68 @@
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/payload_geometry.h",
-      "bytes": 654,
-      "sha256": "a6a7f4858d33c800eb8662476e81021c776a129b9d2d4f6c51a0898fe8663121"
+      "bytes": 668,
+      "sha256": "1717fe28ef4b0deb85f0bfc4651236c19882c26fceb27b2b1ac79bd3f4fdb80c"
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/payload_ledger.c",
-      "bytes": 14579,
-      "sha256": "536cc193b9d295675f1f449bf4edaa02c86cd05a89afd88702b56da4f0df33e8"
+      "bytes": 18815,
+      "sha256": "be840276a97a412dabd71eede07b29b0c93d36a53cc441f87af3b7724712c3ca"
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/payload_ledger.h",
-      "bytes": 2573,
-      "sha256": "893fbf2bd438999f2cfb33b7fd481508a20578383702c7cea26f8db6f8b5fb3c"
+      "bytes": 2883,
+      "sha256": "ba0313ea508fe5fd3e6f9b924de5634285963dd3feb217120f7630cec30b93d1"
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/socket_backend.c",
-      "bytes": 8500,
-      "sha256": "d77af2abacfd07a2fcfd7644dac1866ee72c548f2f1fdc589c509b40021a3578"
+      "bytes": 11113,
+      "sha256": "a84615f7c22241dee41ee7fc4f47405ba1fa0ec40db29abd48449ba02280f463"
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/socket_backend.h",
-      "bytes": 1742,
-      "sha256": "41eedef84a47dc8551dea90a6a0c758949a2baa91e88a5e0f463ecf54fd81c12"
+      "bytes": 1869,
+      "sha256": "0d4800961fadafea06de6ca98450fbf1879be72f64c6771bd35d972e41fd3228"
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/socket_identity.c",
-      "bytes": 5002,
-      "sha256": "7684eea0c2af2acb141ad191c3eb0e0f3e424be79d2315a72d635f504fb4f7da"
+      "bytes": 6463,
+      "sha256": "42f857b4e9366e6dac799b272b9bdc5231bf339b6fa9e6c3d547cde2bea07adf"
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/socket_identity.h",
-      "bytes": 1650,
-      "sha256": "07c8559b66aaa2683520e2f68d4b5dca150d2e6d74b56c3e43ad3470ef1621b7"
+      "bytes": 1732,
+      "sha256": "5f3e0c4e1952df66346bbd057d13393cb220efd2e186a114b3928f414fb4b8a0"
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/socket_owner.c",
-      "bytes": 5586,
-      "sha256": "671d0d22af5a0b913fcd899cbda54e7ae339e8b28f441eda0f898feec82dcf7c"
+      "bytes": 7293,
+      "sha256": "9c4784dc9af8dd025df11478ac944ad0176c0d03c76b584ae622a087da080f31"
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/socket_owner.h",
-      "bytes": 1280,
-      "sha256": "145f396a6241c82b2555da3a12113d14674a507afff5283e7948643dca340976"
+      "bytes": 1333,
+      "sha256": "1811aa72e37593d3a82fef25b9ba396b80c287576061c940fb51b09e558e1582"
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/wire_adapter.c",
-      "bytes": 2170,
-      "sha256": "9b00f79b5f8e1464fbe6b294db15702222378f4a77b0a517ee2265722795bca8"
+      "bytes": 2725,
+      "sha256": "0c323fa384a47c03f2cc5d76971430f8cabc24b9881ece0abf6863187f0ac6c0"
     },
     {
       "path": "experiments/exp-002-none-forwarding/ethernet-pilot/wire_adapter.h",
-      "bytes": 781,
-      "sha256": "44f0ceebd010b7ac3c84ca2054198ae87d694f1acf7e10de5400243fd2887ccb"
+      "bytes": 879,
+      "sha256": "5a043b6fe439a0a633f56247a65c78e4596c4068e271382d6ac2bdcb662d3ddf"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/absence_query.c",
-      "bytes": 2754,
-      "sha256": "2ac7138a5b49274f15f92c5122e8b023a2f1394790ca59366df179a224b4cd2b"
+      "bytes": 3739,
+      "sha256": "ab97058b5cff6a799c17ae041ae6e5b05762de0f3e62d5ccffef1a06e0da6403"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/absence_query.h",
-      "bytes": 510,
-      "sha256": "8b97e1f8eb5b5f6545fbee6afa39be37bfa9e1c353916b04a41a7d783b69ce7c"
+      "bytes": 556,
+      "sha256": "57cfb84e833a397dfe89ee9c1368f54f59658eee27358c3ec18d858a70f2a5e0"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/boot_pair.py",
@@ -356,33 +361,33 @@
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/captured_m1.c",
-      "bytes": 5031,
-      "sha256": "52dc41ce012c9f28d5a70bc0c9d7a84ad54f49163191fa10b0de815b5ed57220"
+      "bytes": 6448,
+      "sha256": "3d2afd6acef522d10e61e6e98cadf6a0003bcb6ef24e668ab49982555ce691b0"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/captured_m1.h",
-      "bytes": 1584,
-      "sha256": "b9143c516318354866de402787acebd8f9322187b08b62c351124e28033b59a9"
+      "bytes": 1665,
+      "sha256": "8b9f6ad40a226cc4e73cecda6fd328333e493835f4635fcb9f0442e59cab7577"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/carrier_query.c",
-      "bytes": 5936,
-      "sha256": "35f95773d3578422dd0376795c968c689624bca4c9013192fa46b20ef17d5d9d"
+      "bytes": 8716,
+      "sha256": "f1bf5f95f14f3a3e912b9ad0b13fbe4ac368c463927b49ed2232fa50f2f022df"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/carrier_query.h",
-      "bytes": 376,
-      "sha256": "f4707077a82ff3451a85d46241282caae32e8fa96134c96607705b1b6dfe8911"
+      "bytes": 431,
+      "sha256": "b3c7a6b22189c41948d8d58a3b7ddaece9552c862021e28aaf0b4a835d7505a6"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/control_capture.c",
-      "bytes": 6800,
-      "sha256": "22718390b408485a78758f7599e76a1a86c3988c87dc5c6e5ec08a269888ed61"
+      "bytes": 9610,
+      "sha256": "1646d8fccbc263a18bf9854bafee016f17dcb6a91d62f315a6b1281bf7a88566"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/control_capture.h",
-      "bytes": 825,
-      "sha256": "44e1a45852c46a75cbd7e4fd6f031d31bbea92c89875d3c5da6144fffc90846d"
+      "bytes": 877,
+      "sha256": "47094a451c080fdcab775b0f9ea2b96f26760f21dddbcb26ce2e2aa0645f1a28"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/data_sync.py",
@@ -396,13 +401,13 @@
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/fanout_query.c",
-      "bytes": 1414,
-      "sha256": "acfe26f4d932b1d1686049c1915313d8004a367bfb3d7ba355f92bef56829d5e"
+      "bytes": 1707,
+      "sha256": "3d4d1f61e384d454f09a76e04dfa0b47a36e2a3ccdea7a362e974923f0159b66"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/fanout_query.h",
-      "bytes": 418,
-      "sha256": "1a911cfa99a58ee50190bbc8be7f0555e0b0ff72ca3624bcab456db550f127c9"
+      "bytes": 453,
+      "sha256": "51f4c9cb3612fbaa0981517e4a69dee1cefd9e8e82e0b614bb2988c9d30d90e7"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/guest_probe.py",
@@ -436,8 +441,8 @@
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/identities/public_identity.c",
-      "bytes": 3096,
-      "sha256": "60a3a601137c76db8fa50e58a88aa23e5ba572d898f5c39fce93ef1377dcece1"
+      "bytes": 3743,
+      "sha256": "449d00827120dfd1e006e85838f0aefe7e89b1de643e6eecaa4eeff6d95e86e4"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/identities/stage_private.py",
@@ -446,13 +451,13 @@
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/m1_query.c",
-      "bytes": 19519,
-      "sha256": "ae7e8da8822f5b10b21eeeff444cbac3b75bae1ff6e31348ed8d736229d4d9d6"
+      "bytes": 26198,
+      "sha256": "c4dbee9c187b5958aec600e1e78fbc6b8a9580f4eb717ffaa67e7ebb0cc98ee7"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/m1_query.h",
-      "bytes": 2160,
-      "sha256": "a37e30ec7a2225554e5a92a2e92b5c1a8f3d6ab49f6c97c5dee8e99afa989b23"
+      "bytes": 2474,
+      "sha256": "e11366f089771ad7273bbeed3955370b79d67e6151e7cc154596b305df2d6b76"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/module_smoke.py",
@@ -461,13 +466,13 @@
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/pair_plan.c",
-      "bytes": 1439,
-      "sha256": "29ed25f8ec8b2064bbfa2bebea7ce10e867be7d675c9166fd081cbea61799f1d"
+      "bytes": 1954,
+      "sha256": "3d56527c2c87e7622ae3cfa5267345a48eedcdd615637837bf3b1d1ede0e2bd9"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/pair_plan.h",
-      "bytes": 552,
-      "sha256": "9b442d2e3df4ef5210ed598db60fcb4d2cff61a00825570b3d16cdb0ed344e5b"
+      "bytes": 586,
+      "sha256": "e64fc50a2d2330ad93bf82f67ffd88c26a327f31bbbabee199d5cb7fc2b63dab"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/pair_plan.py",
@@ -476,48 +481,48 @@
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/paired_query.c",
-      "bytes": 5539,
-      "sha256": "49476ecd6f5103125d8c49e4dc4365fbed4cda06606bd6717848a3ffa0e4bd79"
+      "bytes": 7451,
+      "sha256": "cb233e799c354f538d6697ea04f9e7dbc495cdde4f37e4387e36197df687c7fe"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/paired_query.h",
-      "bytes": 668,
-      "sha256": "8016cfc2e6b0e9ba90af0d9501ecb70e75b5933a6ba173fca4f4338fca2d86f6"
+      "bytes": 720,
+      "sha256": "0e7378e3357a08780d2799acc5cf9564bbc2117a27f4f4cba5a174d7614c3d6a"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/peer_path.c",
-      "bytes": 3570,
-      "sha256": "bf3d7dcb1c0da6a16283c69a66e480ca03e66380f1c2163cdeb3e66fa837218a"
+      "bytes": 4589,
+      "sha256": "04e5e20d8dea2370397e6b03546b5de17b6c6fb1ca2678dfa6b42de3ad0db20f"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/peer_path.h",
-      "bytes": 791,
-      "sha256": "ef2b29551806661d97ea62b5aac80eca8a0391ecb3169c3a7511549ea30ea18e"
+      "bytes": 813,
+      "sha256": "2ef03601ced3eaa1e49689940b6fee5471e93d001332d81d30d3648bfbe10729"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/preliminary_data.c",
-      "bytes": 10511,
-      "sha256": "196cc62523e6f5976271c8ee2ab3e8dfeb992c94052ecd483783dcfc55ba214d"
+      "bytes": 16482,
+      "sha256": "24b06587a3cdd71c1b8ace311de2718c400e25707a61cb4d7738d4cfcec3e46d"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/preliminary_data.h",
-      "bytes": 371,
-      "sha256": "f3de7595b945e513ae9be46cbeb55f16e9b2b05b80ae63cc19b6188626550b36"
+      "bytes": 389,
+      "sha256": "1f5ef599472ab18865319539eeb09c1e85e8b746a96bdb3dc7c3c220f688021f"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/preliminary_profile.h",
-      "bytes": 866,
-      "sha256": "ef9610d47447858e5c35a133b2448a693db22b2a3d57ae6166157f1e5f1d531e"
+      "bytes": 872,
+      "sha256": "28fd061a38ea1e922819e8bba756808f457fce4bfcf1096a8af39d284d49a31c"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/raw_export.c",
-      "bytes": 1917,
-      "sha256": "fa57f96d85f7409b07748f3cb3b52e182ef9f1ce1dd3501cbf99e394fed76a21"
+      "bytes": 2411,
+      "sha256": "b889b316e2527978b8be5c6ce847dd74804cd638aa2cbc561309b93ecfbd2c4c"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/raw_export.h",
-      "bytes": 614,
-      "sha256": "2841cf0a98912a6e8d1e7689aff0e58b423c75b8829619c7bbb95df0fa698a99"
+      "bytes": 657,
+      "sha256": "05683f8f1034f29ae2982d0ce34b3be41708dfd00d8c591f6e5881d566b2cd16"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/read_preliminary.py",
@@ -526,48 +531,48 @@
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/receipt_store.c",
-      "bytes": 1014,
-      "sha256": "84561329dfa9f3ffaeb3e9be803c08db4df5f427f4c1e4ee83cbf6037c97a58f"
+      "bytes": 1222,
+      "sha256": "824d41afbc5fe0b5a58704aeebc2eba7b6d12e6906835c07dbef4f455b310976"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/receipt_store.h",
-      "bytes": 498,
-      "sha256": "06f57580c23ea41c46ad587073e19bedf351958c3c9a72ee5c296d5b34783321"
+      "bytes": 530,
+      "sha256": "4fe319e55405c1cc5835d6063bfb85dfbbfb3a5d14f4098197f73e254b540d5c"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/route_query.c",
-      "bytes": 9323,
-      "sha256": "3437a4b8de8fc24eea8bb46b50b949c63b28d2ad4ea74ecf8ad10b6ad87e1db8"
+      "bytes": 12706,
+      "sha256": "977f6eed1c53782ea52ff83079ae853e2ddd371f6441c781fca202433dddc937"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/route_query.h",
-      "bytes": 501,
-      "sha256": "718e81146733fb6f0984e80d332098ccf56af1b83e831a5bc972769578f6a7a8"
+      "bytes": 531,
+      "sha256": "31dcd1fe75cf45fb826821c797e5a841170331318463aa2154ceeeda297fdf21"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/session_query.c",
-      "bytes": 3569,
-      "sha256": "091a6a7a463f089b78272bfcb5a607cf89834e03a04f1391da6e568fdaee5d28"
+      "bytes": 4670,
+      "sha256": "2a92d1f6b9e74dc612dbb2b6ba51c6df83758f6bda5da3e87e316f01416d7c39"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/session_query.h",
-      "bytes": 979,
-      "sha256": "df95baf4e76d8637917ca749fde2e3cd69fcd851c4d14baa9f501b4b671f387e"
+      "bytes": 1036,
+      "sha256": "657534b7eb2c4db96ba8f31f276ab397b85c392677779a149c182a4018512654"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/socket_probe.c",
-      "bytes": 11957,
-      "sha256": "49b974dd5de2c68790fccdb98b2491ed2b6aa8be6cb314771b99340294ee1e6b"
+      "bytes": 15916,
+      "sha256": "871b76356eefa26e3652b38f6e7af3b7f57799776113520147213a9f3f341aff"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/suite_query.c",
-      "bytes": 1322,
-      "sha256": "b09da63db3a81fce594f3b2abe3fd84efb2924ed67a9ed8d6b175fed534f34c7"
+      "bytes": 1702,
+      "sha256": "8df8df19fa6bf60e8f2ae52ab98eb09fc300204c810dd41e68d60fe60363e8ce"
     },
     {
       "path": "experiments/exp-002-none-forwarding/native-lab/suite_query.h",
-      "bytes": 312,
-      "sha256": "b724726e11ad27bffe2e2a6dee69732ff01314c6e687c257d7a75f14f3cc92e6"
+      "bytes": 304,
+      "sha256": "e6539a710ba64dbed14d4696874ed2d863304677dfbfcfa5602ec31052b50c9d"
     },
     {
       "path": "experiments/exp-002-none-forwarding/processing-proof/projection.py",
@@ -576,63 +581,63 @@
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/fanout_flow.c",
-      "bytes": 6962,
-      "sha256": "b1221c6d88d9f11d5f60d6332dd7ad6222f1a81044d3ac94e7eb05ee2a2d4e1d"
+      "bytes": 8956,
+      "sha256": "4cf8b99777d41a68a2f0e46a8c7cbed65bc22466f74f71321a508e59a51be2be"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/fanout_flow.h",
-      "bytes": 1086,
-      "sha256": "799444bd1e4f5affdb5ffcd01f52d51c9d81371ab9024fbc1f5cd603f8146c8c"
+      "bytes": 1157,
+      "sha256": "e517f5372aab79cdee7e4bbe7852e4e663728d7d4f69dd1f5d0bd43d82888d7b"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/file_store.c",
-      "bytes": 5618,
-      "sha256": "81b49d94ed7706161e1530cc5c28f3d239d4651212ea3faf128c91b236bc51af"
+      "bytes": 7670,
+      "sha256": "f1e0a51b61a2e6a27a81e21d28fbd464c0b45a3eb96edad6856375526abf7bc2"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/file_store.h",
-      "bytes": 820,
-      "sha256": "3aae05c6c99b7661fad1e7046b66ca71b175956d4a679d2a9575a73a127e17af"
+      "bytes": 922,
+      "sha256": "e2359398b76552dc52f765c1b47dd21678898a07f07723481534dfe9e000cdff"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/local_client.c",
-      "bytes": 4249,
-      "sha256": "828a0b0cc84f00003d84cedc53baa2264117ee47059d5fe2fc1cf21a96055609"
+      "bytes": 5439,
+      "sha256": "098473ffb9aeb54e9358d24daa52d404aadf4a7aa18e34c2091a6f49ab23a78e"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/local_client.h",
-      "bytes": 1431,
-      "sha256": "0a1deebceec6ffd49bf62edcf7b8c35fd52789c48cdf25dde7e728fe8d401146"
+      "bytes": 1465,
+      "sha256": "b804a9186a5d09836b4dc146f0946bb364883910b4a4eb72deca40b9d84fc0df"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/native_prepare.c",
-      "bytes": 5923,
-      "sha256": "d10737ac44adf76d053485fed2dc0681f55d2d4f15bbe85603635a8439950563"
+      "bytes": 7168,
+      "sha256": "ced52b51422930dc45d06713a22b0d19c1e70afa309105ac856328aef76ef6d3"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/native_prepare.h",
-      "bytes": 1034,
-      "sha256": "59be14e026c72b5e66563dbe61aa5f78e65cea430ad8d9f19343e237286b3885"
+      "bytes": 1070,
+      "sha256": "2acc26485b9864fa6f154a49dddecf34a49236b8aa49575b8f66aed86170b2f5"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/netlink_socket.c",
-      "bytes": 4877,
-      "sha256": "d5208e19e599881747586956912a2c482459c598bc22264fab70a45995163b59"
+      "bytes": 6355,
+      "sha256": "e990aa5f70a49af62f695fe82a72cbbf5f2b90281bfcc89c047b2270cfd36e60"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/netlink_socket.h",
-      "bytes": 887,
-      "sha256": "af76787f7de3e8cbb51f7ca9b674853c29aea0f0cb35bda602142328fe0b2c7e"
+      "bytes": 955,
+      "sha256": "ec3711c5ef64049e0823cc96cf5e5a5fba426fac694f5389834223ef711ffa0f"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/provider_backend.c",
-      "bytes": 8084,
-      "sha256": "feabeb5a60b43124e563ef278efe26422a221cba9604992625f62d7f978824f8"
+      "bytes": 10349,
+      "sha256": "965fc164044c6de09023f30f7ca8fe3d8c93194bc73235bc9d2228863ebdae94"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/provider_backend.h",
-      "bytes": 1507,
-      "sha256": "2f4a642ab872537b381408e8365a64ea0c94d496459a4ff68e9282089e550a02"
+      "bytes": 1573,
+      "sha256": "f31888add0fb0b8caba1071d071367c74794dced73690d6beace7f80b15d9c16"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/public-blake3/LICENSE_A2",
@@ -681,58 +686,58 @@
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/readback.c",
-      "bytes": 18903,
-      "sha256": "d2386c5b9092626698a7dd5e387c55b16e331e64c3318aec77b77d52011763f0"
+      "bytes": 27486,
+      "sha256": "1e94d8315ceecd0cd7948a89a1f7824a98f7ea04b27fa360bc28b2f27e95cf11"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/reservations.c",
-      "bytes": 54563,
-      "sha256": "2e751e8355e2910e102f8d5db985e11de52efcc1a21be50e1620f42eb740e930"
+      "bytes": 70023,
+      "sha256": "3c568663582f923d2ad1e356df4da0c0a13fbb43a5998cf757f4ccd8a2659315"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/reservations.h",
-      "bytes": 7111,
-      "sha256": "b42e1371e8f9b233026b3d04ff02f9b5e385248bedab8aee29cee1784c0a07fd"
+      "bytes": 8028,
+      "sha256": "29f09c9d04a6404aa5dced312e01207a89f160fca59300053db8ef76522c15df"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/reserved_netlink.c",
-      "bytes": 4105,
-      "sha256": "d0cca49329acc240f415982f2eace1039f95f6fc07e909d5127fd9243cd0f961"
+      "bytes": 5774,
+      "sha256": "29da383e1b34b09cf51e65e7742cefe611050a51095d6dd85fdcec91c1b3e96f"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/reserved_netlink.h",
-      "bytes": 675,
-      "sha256": "67c8534fe80476a84ccd7f25381581c2f2207739bd3dbf46df52e3678e7d298d"
+      "bytes": 701,
+      "sha256": "87aa3b319a0e60ca7416def773caa85e12627b62920f5df47b12c3c2392937c9"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/session_flow.c",
-      "bytes": 10574,
-      "sha256": "71afe2d5fb7220386b285090e74566d2eed6fa5b215dd170077e8b8cf78f7eec"
+      "bytes": 13453,
+      "sha256": "b7df6dfef624ad6698d31691d1ca89cee709bc2cb90e5e5a82392866a8aa9442"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/session_flow.h",
-      "bytes": 1972,
-      "sha256": "f34e8ee9595f1f6aebdaebcfb39802df2bf3a3b79c408c6f766fb9afd318182b"
+      "bytes": 2034,
+      "sha256": "bff91e172e16280c1f4eb4f34c0c2ff5caa66bbcc58a87436e0389585111423b"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/signer.c",
-      "bytes": 5069,
-      "sha256": "5e239f58501a1db5aab3499ce9ade1b844ff3077f14565546f5881c24f7f0584"
+      "bytes": 6311,
+      "sha256": "8be0b51c06d47053ad6573456f923fb5b5ea617a74ef70a8e2b4d521d3faed34"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/signer.h",
-      "bytes": 2049,
-      "sha256": "e35b21fc8ba84ed378bc77603867a974b086bbab46a77e0e8d38728ea8cfde67"
+      "bytes": 2208,
+      "sha256": "4f446ce8e6c34aebe0c02d9687642b0755022b7e3ce36cc505991a80e86fdc5e"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/transaction.c",
-      "bytes": 25751,
-      "sha256": "6482b62e50b62af3a99d32d58a31eb7f8b5348f1f52581b30febb1a3d5950115"
+      "bytes": 34319,
+      "sha256": "6ce710b4875d3913ae48d6de4f82ef530483ce783effb9f4bc986129ff88c225"
     },
     {
       "path": "experiments/exp-002-none-forwarding/signer-adapter/transaction.h",
-      "bytes": 7878,
-      "sha256": "4dbb2113b38b03c9c3c5052fd24b6aa30118c258b999b468eb0a0995c7feedc7"
+      "bytes": 9030,
+      "sha256": "0e30416bc574e7075e54c0cba64bf52533e4f2f4af40627104688d6bb46dff1a"
     },
     {
       "path": "install",
@@ -762,7 +767,7 @@
     {
       "path": "release/provenance.json",
       "bytes": 720,
-      "sha256": "3021fea0cc952e289ed2c2c2a413757ee9c429c717d4246f93edb2893fd94c48"
+      "sha256": "036097305d5b029858e1f13fcb6a2d66af67988abe6bedbc43ce946ff2fc17ca"
     },
     {
       "path": "repair-checkout.py",

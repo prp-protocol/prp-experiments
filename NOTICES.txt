@@ -22,6 +22,8 @@ payloads. The production edition supplies separate source and notice artifacts
 and exact distro-source references; no third-party material is relicensed.
 The complete kmod tree is not exported.
 
-Edition 1.5.0: updated core/Ethernet and bounded corresponding sources; historical
+Edition 1.5.0 supplied the current core/Ethernet and bounded sources; historical
 crypto dependencies and distro image are unchanged. EXP-001 source notices are
 in its bundled licensed source subset. All original third-party licenses apply.
+Edition 1.5.1 formats consumer C sources and preserves failure-path DUT counters.
+Modules, image, crypto dependencies and PDF are unchanged from 1.5.0.

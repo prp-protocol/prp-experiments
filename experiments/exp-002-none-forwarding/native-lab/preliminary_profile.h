@@ -29,9 +29,9 @@
 static inline unsigned pd_mode(unsigned phase)
 {
 #ifdef PD_REFERENCE_ONLY
- return phase == 1 ? 2 : 0;
+    return phase == 1 ? 2 : 0;
 #else
- return phase == 1 || phase == 2 ? (PD_REVERSE ? 3 - phase : phase) : 0;
+    return phase == 1 || phase == 2 ? (PD_REVERSE ? 3 - phase : phase) : 0;
 #endif
 }
 #endif
